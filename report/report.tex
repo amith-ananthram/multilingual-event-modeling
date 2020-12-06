@@ -1,0 +1,78 @@
+\documentclass[12pt]{article}
+
+\usepackage[compact]{titlesec}
+\titlespacing{\section}{0pt}{*0}{*0}
+\titlespacing{\subsection}{0pt}{*0}{*0}
+\titlespacing{\subsubsection}{0pt}{*0}{*0}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{array, amsmath, caption, tabularx,  ragged2e,  booktabs}
+
+\newcommand{\ghighlight}[1]{%
+  \colorbox{green!50}{$\displaystyle#1$}}
+\newcommand{\yhighlight}[1]{%
+  \colorbox{yellow!50}{$\displaystyle#1$}}
+\DeclareMathOperator{\Tr}{Tr}
+
+\input{preamble}
+
+\begin{document}
+
+\begin{flushleft}
+\textbf{Project} \\
+Amith Ananthram (aa4461) \\
+\today
+\end{flushleft}
+
+\vspace{0.1in}
+
+\normalsize
+
+\begin{equation*}
+p(\bm{\mu}, \bm{\Sigma}, \bm{\theta}, \bm{\zeta}, \bm{x}) = \prod^{K}_{k} p(\mu_k)p(\Sigma_k)\prod^N_{i}(p(\theta_i)\prod^M_{j}(p(\zeta_{ij} | \theta_i)p(x_{ij} | \zeta_{ij}, \mu_{\zeta_{ij}}, \Sigma_{\zeta_{ij}}))
+\end{equation*}
+
+\pagebreak
+
+\section{Appendix}
+
+\subsection{Derivation of complete conditionals for $\mu_k$ and $\Sigma_k$}
+
+Below is the derivation of the complete conditionals for $\mu_k$ and $\Sigma_k$, the parameters of our multivariate Gaussian distribution (with Gaussian and inverse-Wishart priors, respectively).  Note that these complete conditionals are the same for both variants of our model (embeddings only and embeddings + named entities) as the bag of word embeddings is modeled independently from the bag of words.
+
+$W_k$ is the set of words across all documents assigned to topic $k$ with size $n_{W_k}$.  $\bar{w}_k = (1/n_{W_k})\sum^{n_{W_k}}_l w_l$.  Updated parameters for the conjugate complete conditionals are highlight in green.  Normalizing factors (that is, factors that are constant with respect to the random variable being modeled) which are dropped from the exponents (or in rare cases raised into the exponent) are highlighted in yellow.
+
+\begin{equation*}
+\begin{split}
+p(\mu_k | \mu_{-k}, \bm{\Sigma}, \bm{\theta}, \bm{\zeta}, \bm{x}) & \propto p(\mu_k) \prod_{w \in W_k} p(w | \mu_k, \Sigma_k) \\
+& \propto \exp{-\frac{1}{2}(\mu_k - m_k)^T S_k^{-1} (\mu_k - m_k)} \prod_{w \in W_k} \exp{-\frac{1}{2}(w - \mu_k)^T \Sigma_k^{-1} (w - \mu_k)} \\
+& \propto \exp{-\frac{1}{2}(\mu_k - m_k)^T S_k^{-1} (\mu_k - m_k)} \exp{\sum_{w \in W_k} -\frac{1}{2}(w - \mu_k)^T \Sigma_k^{-1} (w - \mu_k)} \\
+& \propto \exp{-\frac{1}{2}((\mu_k - m_k)^T S_k^{-1} (\mu_k - m_k) + \sum_{w \in W_k} (w - \mu_k)^T \Sigma_k^{-1} (w - \mu_k))} \\
+& \propto \exp{-\frac{1}{2}((\mu_k - m_k)^T S_k^{-1} (\mu_k - m_k) + \sum_{w \in W_k}(\yhighlight{w^T\Sigma_k^{-1}w} - 2 \mu_k^T\Sigma_k^{-1}w + \mu_k^T\Sigma^{-1}\mu_k))} \\
+& \propto \exp{-\frac{1}{2}((\mu_k - m_k)^T S_k^{-1} (\mu_k - m_k) - 2 \mu_k^T\Sigma_k^{-1}n_{W_k}\bar{w}_k + n_{W_k}\mu_k^T\Sigma^{-1}\mu_k)} \\
+& \propto \exp{-\frac{1}{2}(\mu_k^T(\ghighlight{S_k^{-1} + n_{W_k}\Sigma^{-1}})\mu_k - 2\mu_k^T(S_k^{-1}m_k + \Sigma_k^{-1}n_{W_k}\bar{w}_k) + \yhighlight{m_k^TS_k^{-1}m_k})} \\
+& \propto \exp{-\frac{1}{2}(\mu_k^T\hat{S}_k^{-1}\mu_k - 2\mu_k^T\hat{S}_k^{-1}\ghighlight{\hat{S}_k(S_k^{-1}m_k + \Sigma_k^{-1}n_{W_k}\bar{w}_k)})} \\
+& \propto \exp{-\frac{1}{2}(\mu_k^T\hat{S}_k^{-1}\mu_k - 2\mu_k^T\hat{S}_k^{-1}\hat{m}_k + \yhighlight{\hat{m}_k^T\hat{S}_k^{-1}\hat{m}_k})} \\
+& = \mathcal{N}(\hat{m}_k, \hat{S}_k), \hat{m}_k = \hat{S}_k(S_k^{-1}m_k + \Sigma_k^{-1}n_{W_k}\bar{w}_k), \hat{S}_k^{-1} = S_k^{-1} + n_{W_k}\Sigma^{-1}
+\end{split}
+\end{equation*}
+
+\begin{equation*}
+\begin{split}
+p(\Sigma_k | \bm{\mu}, \Sigma_{-k}, \bm{\theta}, \bm{\zeta}, \bm{x}) & \propto p(\Sigma_k) \prod_{w \in W_k} p(w | \mu_k, \Sigma_k) \\
+& \propto |\Sigma_k|^{-(\nu_k + d + 1)/2} \exp{-\frac{1}{2} \Tr{(\Psi_k\Sigma_k^{-1})}}\prod_{w \in W_k} |\Sigma_k|^{-1/2} \exp{-\frac{1}{2}(w - \mu_k)^T\Sigma_k^{-1}(w - \mu_k)} \\
+& \propto |\Sigma_k|^{-(n_{W_k} + \nu_k + d + 1)/2} \exp{-\frac{1}{2} (\Tr{(\Psi_k\Sigma_k^{-1})} + \sum_{w \in W_k} (w - \mu_k)^T\Sigma_k^{-1}(w - \mu_k))} \\
+& \propto |\Sigma_k|^{-(n_{W_k} + \nu_k + d + 1)/2} \exp{-\frac{1}{2} (\Tr{(\Psi_k\Sigma_k^{-1})} + \sum_{w \in W_k} \Tr{((w - \mu_k)^T\Sigma_k^{-1}(w - \mu_k))})} \\
+& \propto |\Sigma_k|^{-(n_{W_k} + \nu_k + d + 1)/2} \exp{-\frac{1}{2} (\Tr{(\Psi_k\Sigma_k^{-1})} + \sum_{w \in W_k} \Tr{((w - \mu_k)^T(w - \mu_k)\Sigma_k^{-1})})} \\
+& \propto |\Sigma_k|^{-(n_{W_k} + \nu_k + d + 1)/2} \exp{-\frac{1}{2} (\Tr{(\Psi_k\Sigma_k^{-1} + \sum_{w \in W_k} (w - \mu_k)^T(w - \mu_k)\Sigma_k^{-1})})} \\
+& \propto |\Sigma_k|^{-(\ghighlight{n_{W_k} + \nu_k} + d + 1)/2} \exp{-\frac{1}{2} (\Tr{((\ghighlight{\Psi_k + \sum_{w \in W_k} (w - \mu_k)^T(w - \mu_k)})\Sigma_k^{-1})})} \\
+& = \mathcal{W}^{-1}(\hat{\Psi}_k, \hat{\nu}_k), \hat{\Psi}_k = \Psi_k + \sum_{w \in W_k} (w - \mu_k)^T(w - \mu_k), \hat{\nu}_k = n_{W_k} + \nu_k 
+\end{split}
+\end{equation*}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

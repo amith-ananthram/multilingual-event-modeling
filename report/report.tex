@@ -38,9 +38,9 @@ p(\bm{\mu}, \bm{\Sigma}, \bm{\theta}, \bm{\zeta}, \bm{x}) = \prod^{K}_{k} p(\mu_
 
 \subsection{Derivation of complete conditionals for $\mu_k$ and $\Sigma_k$}
 
-Below is the derivation of the complete conditionals for $\mu_k$ and $\Sigma_k$, the parameters of our multivariate Gaussian distribution (with Gaussian and inverse-Wishart priors, respectively).  Note that these complete conditionals are the same for both variants of our model (embeddings only and embeddings + named entities) as the bag of word embeddings is modeled independently from the bag of words.
+Below is the derivation of the complete conditional distributions for $\mu_k$ and $\Sigma_k$, the latent variables that govern our multivariate Gaussian distributions which model semantic sense (with Gaussian and inverse-Wishart priors, respectively).  Note that these are the same for both variants $1$ and $2$ of our model as the bag of word embeddings is modeled independently from the bag of words.
 
-$W_k$ is the set of words across all documents assigned to topic $k$ with size $n_{W_k}$.  $\bar{w}_k = (1/n_{W_k})\sum^{n_{W_k}}_l w_l$.  Updated parameters for the conjugate complete conditionals are highlight in green.  Normalizing factors (that is, factors that are constant with respect to the random variable being modeled) which are dropped from the exponents (or in rare cases raised into the exponent) are highlighted in yellow.
+$W_k$ is the set of words across all documents assigned to topic $k$ with size $n_{W_k}$.  $\bar{w}_k = (1/n_{W_k})\sum^{n_{W_k}}_l w_l$.  Updated parameters for the conjugate complete conditionals are highlighted in green.  Normalizing factors (that is, factors that are constant with respect to the random variable being modeled) which are dropped from the exponents (or in rare cases raised into the exponent) are highlighted in yellow.
 
 \begin{equation*}
 \begin{split}
@@ -53,7 +53,7 @@ p(\mu_k | \mu_{-k}, \bm{\Sigma}, \bm{\theta}, \bm{\zeta}, \bm{x}) & \propto p(\m
 & \propto \exp{-\frac{1}{2}(\mu_k^T(\ghighlight{S_k^{-1} + n_{W_k}\Sigma^{-1}})\mu_k - 2\mu_k^T(S_k^{-1}m_k + \Sigma_k^{-1}n_{W_k}\bar{w}_k) + \yhighlight{m_k^TS_k^{-1}m_k})} \\
 & \propto \exp{-\frac{1}{2}(\mu_k^T\hat{S}_k^{-1}\mu_k - 2\mu_k^T\hat{S}_k^{-1}\ghighlight{\hat{S}_k(S_k^{-1}m_k + \Sigma_k^{-1}n_{W_k}\bar{w}_k)})} \\
 & \propto \exp{-\frac{1}{2}(\mu_k^T\hat{S}_k^{-1}\mu_k - 2\mu_k^T\hat{S}_k^{-1}\hat{m}_k + \yhighlight{\hat{m}_k^T\hat{S}_k^{-1}\hat{m}_k})} \\
-& = \mathcal{N}(\hat{m}_k, \hat{S}_k), \hat{m}_k = \hat{S}_k(S_k^{-1}m_k + \Sigma_k^{-1}n_{W_k}\bar{w}_k), \hat{S}_k^{-1} = S_k^{-1} + n_{W_k}\Sigma^{-1}
+& = \mathcal{N}(\hat{m}_k, \hat{S}_k), \hat{m}_k = \hat{S}_k(S_k^{-1}m_k + \Sigma_k^{-1}n_{W_k}\bar{w}_k), \hat{S}_k^{-1} = S_k^{-1} + n_{W_k}\Sigma_k^{-1}
 \end{split}
 \end{equation*}
 
@@ -63,10 +63,10 @@ p(\Sigma_k | \bm{\mu}, \Sigma_{-k}, \bm{\theta}, \bm{\zeta}, \bm{x}) & \propto p
 & \propto |\Sigma_k|^{-(\nu_k + d + 1)/2} \exp{-\frac{1}{2} \Tr{(\Psi_k\Sigma_k^{-1})}}\prod_{w \in W_k} |\Sigma_k|^{-1/2} \exp{-\frac{1}{2}(w - \mu_k)^T\Sigma_k^{-1}(w - \mu_k)} \\
 & \propto |\Sigma_k|^{-(n_{W_k} + \nu_k + d + 1)/2} \exp{-\frac{1}{2} (\Tr{(\Psi_k\Sigma_k^{-1})} + \sum_{w \in W_k} (w - \mu_k)^T\Sigma_k^{-1}(w - \mu_k))} \\
 & \propto |\Sigma_k|^{-(n_{W_k} + \nu_k + d + 1)/2} \exp{-\frac{1}{2} (\Tr{(\Psi_k\Sigma_k^{-1})} + \sum_{w \in W_k} \Tr{((w - \mu_k)^T\Sigma_k^{-1}(w - \mu_k))})} \\
-& \propto |\Sigma_k|^{-(n_{W_k} + \nu_k + d + 1)/2} \exp{-\frac{1}{2} (\Tr{(\Psi_k\Sigma_k^{-1})} + \sum_{w \in W_k} \Tr{((w - \mu_k)^T(w - \mu_k)\Sigma_k^{-1})})} \\
-& \propto |\Sigma_k|^{-(n_{W_k} + \nu_k + d + 1)/2} \exp{-\frac{1}{2} (\Tr{(\Psi_k\Sigma_k^{-1} + \sum_{w \in W_k} (w - \mu_k)^T(w - \mu_k)\Sigma_k^{-1})})} \\
-& \propto |\Sigma_k|^{-(\ghighlight{n_{W_k} + \nu_k} + d + 1)/2} \exp{-\frac{1}{2} (\Tr{((\ghighlight{\Psi_k + \sum_{w \in W_k} (w - \mu_k)^T(w - \mu_k)})\Sigma_k^{-1})})} \\
-& = \mathcal{W}^{-1}(\hat{\Psi}_k, \hat{\nu}_k), \hat{\Psi}_k = \Psi_k + \sum_{w \in W_k} (w - \mu_k)^T(w - \mu_k), \hat{\nu}_k = n_{W_k} + \nu_k 
+& \propto |\Sigma_k|^{-(n_{W_k} + \nu_k + d + 1)/2} \exp{-\frac{1}{2} (\Tr{(\Psi_k\Sigma_k^{-1})} + \sum_{w \in W_k} \Tr{((w - \mu_k)(w - \mu_k)^T\Sigma_k^{-1})})} \\
+& \propto |\Sigma_k|^{-(n_{W_k} + \nu_k + d + 1)/2} \exp{-\frac{1}{2} (\Tr{(\Psi_k\Sigma_k^{-1} + \sum_{w \in W_k} (w - \mu_k)(w - \mu_k)^T\Sigma_k^{-1})})} \\
+& \propto |\Sigma_k|^{-(\ghighlight{n_{W_k} + \nu_k} + d + 1)/2} \exp{-\frac{1}{2} (\Tr{((\ghighlight{\Psi_k + \sum_{w \in W_k} (w - \mu_k)(w - \mu_k)^T})\Sigma_k^{-1})})} \\
+& = \mathcal{W}^{-1}(\hat{\Psi}_k, \hat{\nu}_k), \hat{\Psi}_k = \Psi_k + \sum_{w \in W_k} (w - \mu_k)(w - \mu_k)^T, \hat{\nu}_k = n_{W_k} + \nu_k 
 \end{split}
 \end{equation*}
 

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  5 DEC 2020 22:19
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  7 DEC 2020 00:28
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -741,11 +741,11 @@ Overfull \hbox (23.581pt too wide) detected at line 71
 
 [2] [3] (./report.aux) ) 
 Here is how much of TeX's memory you used:
- 10611 strings out of 480608
- 154389 string characters out of 5903631
+ 10617 strings out of 480608
+ 154501 string characters out of 5903631
  452511 words of memory out of 5000000
  26187 multiletter control sequences out of 15000+600000
- 606647 words of font info for 196 fonts, out of 8000000 for 9000
+ 606951 words of font info for 200 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  41i,20n,60p,845b,228s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2020/texmf-dist/fonts/enc/dvips/new
@@ -760,7 +760,7 @@ ve/2020/texmf-dist/fonts/type1/public/newtx/txmiaX.pfb></usr/local/texlive/2020
 ist/fonts/type1/public/newtx/ztmb.pfb></usr/local/texlive/2020/texmf-dist/fonts
 /type1/public/newtx/ztmr.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/pu
 blic/boondox/zxxrw8a.pfb>
-Output written on report.pdf (3 pages, 137830 bytes).
+Output written on report.pdf (3 pages, 137730 bytes).
 PDF statistics:
  58 PDF objects out of 1000 (max. 8388607)
  42 compressed objects within 1 object stream

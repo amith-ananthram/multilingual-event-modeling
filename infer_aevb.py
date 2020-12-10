@@ -9,6 +9,7 @@ import torch
 import pandas as pd
 import numpy as np
 import torch.nn as nn
+from scipy.stats import lognorm
 import torch.nn.functional as F
 from pyro.infer import SVI, TraceMeanField_ELBO
 import pyro.distributions as dist
@@ -17,7 +18,13 @@ from sklearn.neighbors import NearestNeighbors
 
 import preprocess
 
-NUM_TOPICS = 10
+NUM_TOPICS = 100
+
+# QUESTIONS
+#	- how do we set a prior on our topics?  we're doing it on the proportions
+#		- semantic senses, entities involved, language specific topics
+#	- can we add some kind of autoregressive property to it -- the proportions of
+#	  documents on day t should be dependent on the proportions of documents on t - 1
 
 # produce variational parameters of approximate posterior distribution
 # of document proportions from a bag of words representation of the document
@@ -69,6 +76,8 @@ class TopicDecoder(nn.Module):
 
 	# proportions: batch_size x num_topics
 	def forward(self, proportions):
+		# we avoid having to sample assignments from the proportions
+		# by marginalizing out the different possible assignments
 		topics_mu = self.bn_topics_mu(self.topics_mu(proportions))
 		topics_sigma = (0.5 * self.bn_topics_sigma(self.topics_sigma(proportions))).exp()
 
@@ -94,6 +103,8 @@ class NavEmbeddingLDA(nn.Module):
 		pyro.module("prop_inference_net", self.prop_inference_net)
 		with pyro.plate("documents", bows.shape[0]):
 			prop_mu, prop_sigma = self.prop_inference_net(bows)
+
+			# implements the reparameterization trick under the hood
 			props = pyro.sample(
 				"theta", dist.LogNormal(prop_mu, prop_sigma).to_event(1))
 
@@ -101,12 +112,13 @@ class NavEmbeddingLDA(nn.Module):
 	def model(self, bows, document_ids):
 		pyro.module("topic_recognition_net", self.topic_recognition_net)
 		with pyro.plate("documents", bows.shape[0]):
-			# instead of a Dirichlet prior, we use a log-normal distribution
+			# instead of a Dirichlet prior, we use a log-normal prior distribution
 			prop_mu = bows.new_zeros((bows.shape[0], NUM_TOPICS))
 			prop_sigma = bows.new_ones((bows.shape[0], NUM_TOPICS))
 			props = pyro.sample(
 				"theta", dist.LogNormal(prop_mu, prop_sigma).to_event(1))
 
+			# Q: how do we set a prior on the topics?  
 			topics_mu, topics_sigma = self.topic_recognition_net(props)
 
 			for document_index in range(bows.shape[0]):
@@ -117,7 +129,7 @@ class NavEmbeddingLDA(nn.Module):
 						dist.MultivariateNormal(
 							topics_mu[document_index], 
 							scale_tril=torch.diag(topics_sigma[document_index]).double()
-						).to_event(0),
+						),#.to_event(0),
 						obs=self.nav_embeddings[self.article_navs[document_id][nav_id]]	
 					)
 
@@ -133,10 +145,10 @@ if __name__ == '__main__':
 	pyro.set_rng_seed(seed)
 	device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-	article_nav_bows = torch.tensor(article_nav_bows[0:100]).float().to(device)
+	article_nav_bows = torch.tensor(article_nav_bows[0:200]).float().to(device)
 	batch_size = 32
 	learning_rate = 1e-3
-	num_epochs = 50
+	num_epochs = 100
 
 	pyro.clear_param_store()
 
@@ -147,6 +159,9 @@ if __name__ == '__main__':
 		article_nav_bows=article_nav_bows
 	)
 	navLDA.to(device)
+
+	prop_mu, _ = navLDA.prop_inference_net(article_nav_bows)
+	print(prop_mu)
 
 	optimizer = pyro.optim.Adam({"lr": learning_rate})
 	svi = SVI(navLDA.model, navLDA.guide, optimizer, loss=TraceMeanField_ELBO())
@@ -179,5 +194,7 @@ if __name__ == '__main__':
 		print(topic_id)
 		for neighbor_index in topic_neighborhood:
 			print(nav_vocabulary[neighbor_index])
+
+
 	
 

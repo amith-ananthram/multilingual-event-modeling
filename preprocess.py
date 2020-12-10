@@ -15,13 +15,11 @@ from collections import Counter, defaultdict
 
 import spacy
 import stanza
-import editdistance
-from unidecode import unidecode
-from transliterate import translit
 from spacy_stanza import StanzaLanguage
 
+from transformers import MarianMTModel, MarianTokenizer
+
 from sklearn.decomposition import PCA
-from sklearn.metrics import pairwise_distances
 
 REUTERS_DIRECTORY = 'data/reuters'
 LANGUAGE_DIRECTORIES = {
@@ -33,6 +31,14 @@ LANGUAGE_MODELS = {
 	'en': lazy(lambda: spacy.load("en_core_web_lg")),
 	'es': lazy(lambda: spacy.load("es_core_news_lg")),
 	'ru': lazy(lambda: StanzaLanguage(stanza.Pipeline(lang="ru")))
+}
+
+def get_mt_tokenizer_and_model(model_name):
+    return MarianTokenizer.from_pretrained(model_name), MarianMTModel.from_pretrained(model_name)
+
+TRANSLATION_MODELS = {
+    'es': lazy(lambda: get_mt_tokenizer_and_model('Helsinki-NLP/opus-mt-es-en')),
+    'ru': lazy(lambda: get_mt_tokenizer_and_model('Helsinki-NLP/opus-mt-ru-en'))
 }
 
 
@@ -209,14 +215,7 @@ def get_named_entities(lang, parsed):
 		if named_entity.label_ not in NAMED_ENTITY_LABELS:
 			continue
 
-		if lang == 'en':
-			named_entities[named_entity.text.strip().lower()] += 1
-		elif lang == 'es':
-			named_entities[unidecode(named_entity.text.strip()).lower()] += 1
-		elif lang == 'ru':
-			named_entities[translit(named_entity.text.strip(), 'ru', reversed=True).lower()] += 1
-		else: 
-			raise Exception("Unsupported language: %s" % lang)
+		named_entities[named_entity.text.strip().lower()] += 1
 	return named_entities
 
 DONE_PROCESSING = False
@@ -243,6 +242,16 @@ def preprocess_articles_worker(q, processed):
 			print("Unable to extract: %s" % filepath)
 
 		q.task_done()
+
+
+def translate_named_entities(lang, named_entities):
+    mt_outputs = TRANSLATION_MODELS[lang][1].generate(
+        **TRANSLATION_MODELS[lang][0].prepare_seq2seq_batch(named_entities, return_tensors="pt")
+    )
+    return {
+        named_entity:TRANSLATION_MODELS[lang][0].decode(
+            mt_output, skip_special_tokens=True).strip().lower() for (named_entity, mt_output) in zip(named_entities, mt_outputs)
+    }
 
 
 def preprocess_articles(langs, date_start=None, date_end=None, pca_dim=300):
@@ -368,21 +377,50 @@ def preprocess_articles(langs, date_start=None, date_end=None, pca_dim=300):
 	# NAMED ENTITIES 
 	###
 
-	# named_entities = set()
-	# for article in articles:
-	# 	named_entities.update(article.named_entities.keys())
-	# named_entities = list(sorted(named_entities))
-	# named_entity_indices = np.arange(len(named_entities)).reshape(-1, 1)
+	named_entities = set()
+	for article in articles:
+		for named_entity in article.named_entities:
+			named_entities.add((article.lang, named_entity))
+	named_entities = list(sorted(named_entities))
 
-	# print("Ungrouped named entities: %s" % len(named_entities))
+	print("Ungrouped named entities: %s" % len(named_entities))
 
-	# def levenshtein(x, y):
-	# 	return int(editdistance.eval(named_entities[int(x[0])], named_entities[int(y[0])]))
+	es_named_entities = [named_entity for (lang, named_entity) in named_entities if lang == 'es']
+	es_named_entities_translated = translate_named_entities('es', es_named_entities)
+	ru_named_entities = [named_entity for (lang, named_entity) in named_entities if lang == 'ru']
+	ru_named_entities_translated = translate_named_entities('ru', ru_named_entities)
 
-	# distances = pairwise_distances(named_entity_indices, metric=levenshtein)
-	# AgglomerativeClustering or DBSCAN?
+	grouped_named_entity_counts = Counter()
+	for article in articles:
+		for named_entity in article.named_entities:
+			if article.lang == 'es':
+				named_entity = es_named_entities_translated[named_entity]
+			elif article.lang == 'ru':
+				named_entity = ru_named_entities_translated[named_entity]			
 
-	return articles, noun_and_verb_vocabulary, noun_and_verb_embeddings, article_noun_and_verb_counts
+			grouped_named_entity_counts[named_entity] += 1
+
+	named_entity_vocabulary = SortedSet()
+	for named_entity, count in grouped_named_entity_counts.items():
+		if count > 5 and count < 0.8 * len(articles):
+			named_entity_vocabulary.add(named_entity)
+
+	print("Grouped named entities: %s" % len(named_entity_vocabulary))
+
+	article_named_entity_counts = np.zeros((len(articles), len(named_entity_vocabulary)))
+	for article_id, article in enumerate(articles):
+		for named_entity, count in article.named_entities.items():
+			if article.lang == 'es':
+				named_entity = es_named_entities_translated[named_entity]
+			elif article.lang == 'ru':
+				named_entity = ru_named_entities_translated[named_entity]				
+
+			if named_entity not in named_entity_vocabulary:
+				continue
+
+			article_named_entity_counts[article_id][named_entity_vocabulary.index(named_entity)] += count 
+
+	return articles, noun_and_verb_vocabulary, noun_and_verb_embeddings, article_noun_and_verb_counts, named_entity_vocabulary, article_named_entity_counts
 
 if __name__ == '__main__':
-	preprocess_articles(['en', 'es', 'ru'], datetime(1996, 9, 1), datetime(1997, 1, 1))
+	preprocess_articles(['en', 'es', 'ru'], datetime(1996, 9, 1), datetime(1996, 9, 2))

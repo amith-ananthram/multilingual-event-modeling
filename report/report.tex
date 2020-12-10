@@ -20,7 +20,7 @@
 
 \begin{flushleft}
 \textbf{Project} \\
-Amith Ananthram (aa4461) \\
+Amith Ananthram (aa4461f) \\
 \today
 \end{flushleft}
 
@@ -28,11 +28,48 @@ Amith Ananthram (aa4461) \\
 
 \normalsize
 
-\title{TEST}
+\section{Motivation}
+
+\section{Related Work}
+
+- LDA
+- Gaussian Embeddings
+- topic modeling for events
+
+\section{Modeling Events}
+
+noun and verb only, noun and verb and transliterated named entity, language news correction
 
 \begin{equation*}
 p(\bm{\mu}, \bm{\Sigma}, \bm{\theta}, \bm{\zeta}, \bm{x}) = \prod^{K}_{k} p(\mu_k)p(\Sigma_k)\prod^N_{i}(p(\theta_i)\prod^M_{j}(p(\zeta_{ij} | \theta_i)p(x_{ij} | \zeta_{ij}, \mu_{\zeta_{ij}}, \Sigma_{\zeta_{ij}}))
 \end{equation*}
+
+\section{Inference}
+
+- Gibbs (Neal)
+				- Variational Inference (only works when…)	
+				- Black-box VI: auto encoding variational Bayes, auto encoding variational Bayes for topic models
+
+\section{Experiments}
+
+\subsection{Dataset}
+
+- talk about topic tags
+
+\subsection{Feature extraction}
+
+\subsection{Hyperparameters}
+
+\section{Results}
+
+ derived complete conditionals, Gibbs sampler
+				- implemented for model 1 (derived conditionals in Appendix), extremely slow
+					- esp because operating per datapoint
+			- auto encoding variational Bayes implementation
+
+\section{Conclusion}
+
+- future work
 
 \pagebreak
 

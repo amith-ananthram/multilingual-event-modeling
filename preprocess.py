@@ -217,9 +217,10 @@ def get_named_entities(lang, parsed):
 DONE_PROCESSING = False
 
 def preprocess_articles_worker(q, processed):
-	global DONE_PROCESSING
+	# global DONE_PROCESSING
 
-	while not DONE_PROCESSING:
+	# while not DONE_PROCESSING:
+	while not q.empty():
 		article_num, (lang, filepath, date, topics, text) = q.get()
 
 		try:
@@ -281,14 +282,16 @@ def preprocess_articles(langs, date_start=None, date_end=None, pca_dim=300):
 		articles = []
 		q = queue.Queue()
 
-		for thread_num in range(NUM_WORKERS):
-			threading.Thread(target=preprocess_articles_worker, args=(q, articles)).start()
+		# for thread_num in range(NUM_WORKERS):
+			# threading.Thread(target=preprocess_articles_worker, args=(q, articles)).start()
 		
 		for article_num, article in enumerate(get_articles(langs, date_start, date_end)):
 			q.put((article_num, article))
 
-		q.join()
-		DONE_PROCESSING = True
+		# q.join()
+		# DONE_PROCESSING = True
+
+		preprocess_articles_worker(q, articles)		
 
 		with open(extracted_path, 'wb') as f:
 			pickle.dump(articles, f)

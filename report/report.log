@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  7 DEC 2020 19:19
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  10 DEC 2020 12:46
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -214,6 +214,61 @@ Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
 \@lastruleclass=\count193
 \@thisrulewidth=\dimen177
 )
+(/usr/local/texlive/2020/texmf-dist/tex/latex/algorithm2e/algorithm2e.sty
+Package: algorithm2e 2017/07/18 v5.2 algorithms environments
+\c@AlgoLine=\count194
+
+(/usr/local/texlive/2020/texmf-dist/tex/latex/base/ifthen.sty
+Package: ifthen 2014/09/29 v1.1c Standard LaTeX ifthen package (DPC)
+)
+\algocf@hangindent=\skip70
+
+(/usr/local/texlive/2020/texmf-dist/tex/latex/ifoddpage/ifoddpage.sty
+Package: ifoddpage 2016/04/23 v1.1 Conditionals for odd/even page detection
+\c@checkoddpage=\count195
+)
+(/usr/local/texlive/2020/texmf-dist/tex/latex/tools/xspace.sty
+Package: xspace 2014/10/28 v1.13 Space after command names (DPC,MH)
+)
+(/usr/local/texlive/2020/texmf-dist/tex/latex/relsize/relsize.sty
+Package: relsize 2013/03/29 ver 4.1
+)
+\skiptotal=\skip71
+\skiplinenumber=\skip72
+\skiprule=\skip73
+\skiphlne=\skip74
+\skiptext=\skip75
+\skiplength=\skip76
+\algomargin=\skip77
+\skipalgocfslide=\skip78
+\algowidth=\dimen178
+\inoutsize=\dimen179
+\inoutindent=\dimen180
+\interspacetitleruled=\dimen181
+\interspacealgoruled=\dimen182
+\interspacetitleboxruled=\dimen183
+\algocf@ruledwidth=\skip79
+\algocf@inoutbox=\box50
+\algocf@inputbox=\box51
+\AlCapSkip=\skip80
+\AlCapHSkip=\skip81
+\algoskipindent=\skip82
+\algocf@nlbox=\box52
+\algocf@hangingbox=\box53
+\algocf@untilbox=\box54
+\algocf@skipuntil=\skip83
+\algocf@capbox=\box55
+\algocf@lcaptionbox=\skip84
+\algoheightruledefault=\skip85
+\algoheightrule=\skip86
+\algotitleheightruledefault=\skip87
+\algotitleheightrule=\skip88
+\c@algocfline=\count196
+\c@algocfproc=\count197
+\c@algocf=\count198
+\algocf@algoframe=\box56
+\algocf@algobox=\box57
+)
 (./preamble.tex (/usr/local/texlive/2020/texmf-dist/tex/latex/base/fontenc.sty
 Package: fontenc 2020/02/11 v2.0o Standard LaTeX package
 ) (/usr/local/texlive/2020/texmf-dist/tex/latex/base/textcomp.sty
@@ -238,7 +293,7 @@ LaTeX Info: Redefining \textsw on input line 47.
 LaTeX Info: Redefining \textssc on input line 48.
 LaTeX Info: Redefining \textulc on input line 49.
 )
-\ntx@fs=\dimen178
+\ntx@fs=\dimen184
 
 (/usr/local/texlive/2020/texmf-dist/tex/latex/xkeyval/xkeyval.sty
 Package: xkeyval 2014/12/03 v2.7a package option processing (HA)
@@ -248,12 +303,12 @@ Package: xkeyval 2014/12/03 v2.7a package option processing (HA)
 \XKV@toks=\toks24
 \XKV@tempa@toks=\toks25
 )
-\XKV@depth=\count194
+\XKV@depth=\count199
 File: xkeyval.tex 2014/12/03 v2.7a key=value parser (HA)
 ))
 (/usr/local/texlive/2020/texmf-dist/tex/latex/etoolbox/etoolbox.sty
 Package: etoolbox 2019/09/21 v2.5h e-TeX tools for LaTeX (JAW)
-\etb@tempcnta=\count195
+\etb@tempcnta=\count266
 )
 (/usr/local/texlive/2020/texmf-dist/tex/latex/base/fontenc.sty
 Package: fontenc 2020/02/11 v2.0o Standard LaTeX package
@@ -266,7 +321,7 @@ File: t1ntxtlf.fd 2015/01/17 v1.0 font definition file for T1/ntx/tlf
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
 (Font)              scaled to size 12.0pt on input line 112.
 )
-\ntxt@cntz=\count196
+\ntxt@cntz=\count267
 LaTeX Font Info:    Redeclaring math symbol \mathsterling on input line 263.
 )
 (/usr/local/texlive/2020/texmf-dist/tex/latex/cabin/cabin.sty
@@ -289,23 +344,23 @@ Package: fontenc 2020/02/11 v2.0o Standard LaTeX package
 Package: inconsolata 2019/05/17 v1.12
 
 `inconsolata-zi4' v1.12, 2019/05/17 Text macros for Inconsolata (msharpe)
-\zifour@ocount=\count197
+\zifour@ocount=\count268
 )
 (/usr/local/texlive/2020/texmf-dist/tex/latex/microtype/microtype.sty
 Package: microtype 2019/11/18 v2.7d Micro-typographical refinements (RS)
 \MT@toks=\toks26
-\MT@count=\count198
+\MT@count=\count269
 LaTeX Info: Redefining \textls on input line 790.
-\MT@outer@kern=\dimen179
+\MT@outer@kern=\dimen185
 LaTeX Info: Redefining \textmicrotypecontext on input line 1354.
-\MT@listname@count=\count199
+\MT@listname@count=\count270
 
 (/usr/local/texlive/2020/texmf-dist/tex/latex/microtype/microtype-pdftex.def
 File: microtype-pdftex.def 2019/11/18 v2.7d Definitions specific to pdftex (RS)
 
 LaTeX Info: Redefining \lsstyle on input line 914.
 LaTeX Info: Redefining \lslig on input line 914.
-\MT@outer@space=\skip70
+\MT@outer@space=\skip89
 )
 Package microtype Info: Loading configuration file microtype.cfg.
 
@@ -323,12 +378,12 @@ Language: english 2017/06/06 v3.3r English support from the babel system
 
 (/usr/local/texlive/2020/texmf-dist/tex/generic/babel/babel.def
 File: babel.def 2020/03/22 3.42 Babel common definitions
-\babel@savecnt=\count266
-\U@D=\dimen180
+\babel@savecnt=\count271
+\U@D=\dimen186
 
 (/usr/local/texlive/2020/texmf-dist/tex/generic/babel/txtbabel.def)
 \bbl@readstream=\read2
-\bbl@dirlevel=\count267
+\bbl@dirlevel=\count272
 )
 Package babel Info: \l@canadian = using hyphenrules for english
 (babel)             (\language0) on input line 102.
@@ -344,11 +399,11 @@ Package: newtxmath 2020/03/02 v1.625
 ) (/usr/local/texlive/2020/texmf-dist/tex/latex/oberdiek/centernot.sty
 Package: centernot 2016/05/16 v1.4 Centers the not symbol horizontally (HO)
 )
-\tx@cntz=\count268
+\tx@cntz=\count273
 
 (/usr/local/texlive/2020/texmf-dist/tex/generic/kastrup/binhex.tex)
-\tx@Isdigit=\count269
-\tx@IsAlNum=\count270
+\tx@Isdigit=\count274
+\tx@IsAlNum=\count275
 \tx@tA=\toks27
 \tx@tB=\toks28
 \tx@su=\read3
@@ -449,12 +504,12 @@ LaTeX Font Info:    Redeclaring math symbol \hbar on input line 851.
 LaTeX Font Info:    Redeclaring math accent \dot on input line 876.
 LaTeX Font Info:    Redeclaring math accent \ddot on input line 877.
 LaTeX Font Info:    Redeclaring math accent \vec on input line 1940.
-\ntx@numstart=\count271
-\ntx@UCstart=\count272
-\ntx@lcstart=\count273
-\ntx@tmpc=\count274
-\ntx@imath=\count275
-\ntx@jmath=\count276
+\ntx@numstart=\count276
+\ntx@UCstart=\count277
+\ntx@lcstart=\count278
+\ntx@tmpc=\count279
+\ntx@imath=\count280
+\ntx@jmath=\count281
 LaTeX Info: Redefining \Bbbk on input line 2449.
 LaTeX Info: Redefining \not on input line 2598.
 )
@@ -474,30 +529,30 @@ Package: geometry 2020/01/02 v5.9 Page Geometry
 (/usr/local/texlive/2020/texmf-dist/tex/generic/iftex/ifvtex.sty
 Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
 )
-\Gm@cnth=\count277
-\Gm@cntv=\count278
-\c@Gm@tempcnt=\count279
-\Gm@bindingoffset=\dimen181
-\Gm@wd@mp=\dimen182
-\Gm@odd@mp=\dimen183
-\Gm@even@mp=\dimen184
-\Gm@layoutwidth=\dimen185
-\Gm@layoutheight=\dimen186
-\Gm@layouthoffset=\dimen187
-\Gm@layoutvoffset=\dimen188
+\Gm@cnth=\count282
+\Gm@cntv=\count283
+\c@Gm@tempcnt=\count284
+\Gm@bindingoffset=\dimen187
+\Gm@wd@mp=\dimen188
+\Gm@odd@mp=\dimen189
+\Gm@even@mp=\dimen190
+\Gm@layoutwidth=\dimen191
+\Gm@layoutheight=\dimen192
+\Gm@layouthoffset=\dimen193
+\Gm@layoutvoffset=\dimen194
 \Gm@dimlist=\toks30
 )
 (/usr/local/texlive/2020/texmf-dist/tex/latex/natbib/natbib.sty
 Package: natbib 2010/09/13 8.31b (PWD, AO)
-\bibhang=\skip71
-\bibsep=\skip72
+\bibhang=\skip90
+\bibsep=\skip91
 LaTeX Info: Redefining \cite on input line 694.
-\c@NAT@ctr=\count280
+\c@NAT@ctr=\count285
 )
 (/usr/local/texlive/2020/texmf-dist/tex/latex/graphics/epsfig.sty
 Package: epsfig 2017/06/25 v1.7b (e)psfig emulation (SPQR)
-\epsfxsize=\dimen189
-\epsfysize=\dimen190
+\epsfxsize=\dimen195
+\epsfysize=\dimen196
 )
 (/usr/local/texlive/2020/texmf-dist/tex/latex/url/url.sty
 \Urlmuskip=\muskip17
@@ -514,90 +569,86 @@ LaTeX Info: Redefining \bm on input line 209.
 ))
 (/usr/local/texlive/2020/texmf-dist/tex/latex/blindtext/blindtext.sty
 Package: blindtext 2012/01/06 V2.0 blindtext-Package
-
-(/usr/local/texlive/2020/texmf-dist/tex/latex/tools/xspace.sty
-Package: xspace 2014/10/28 v1.13 Space after command names (DPC,MH)
-)
-\c@blindtext=\count281
-\c@Blindtext=\count282
-\c@blind@countparstart=\count283
-\blind@countxx=\count284
-\blindtext@numBlindtext=\count285
-\blind@countyy=\count286
-\c@blindlist=\count287
-\c@blindlistlevel=\count288
-\c@blindlist@level=\count289
-\blind@listitem=\count290
-\c@blind@listcount=\count291
-\c@blind@levelcount=\count292
-\blind@mathformula=\count293
-\blind@Mathformula=\count294
-\c@blind@randomcount=\count295
-\c@blind@randommax=\count296
-\c@blind@pangramcount=\count297
-\c@blind@pangrammax=\count298
+\c@blindtext=\count286
+\c@Blindtext=\count287
+\c@blind@countparstart=\count288
+\blind@countxx=\count289
+\blindtext@numBlindtext=\count290
+\blind@countyy=\count291
+\c@blindlist=\count292
+\c@blindlistlevel=\count293
+\c@blindlist@level=\count294
+\blind@listitem=\count295
+\c@blind@listcount=\count296
+\c@blind@levelcount=\count297
+\blind@mathformula=\count298
+\blind@Mathformula=\count299
+\c@blind@randomcount=\count300
+\c@blind@randommax=\count301
+\c@blind@pangramcount=\count302
+\c@blind@pangrammax=\count303
 )
 (/usr/local/texlive/2020/texmf-dist/tex/latex/l3backend/l3backend-pdfmode.def
 File: l3backend-pdfmode.def 2020-03-12 L3 backend support: PDF mode
-\l__kernel_color_stack_int=\count299
-\l__pdf_internal_box=\box50
+\l__kernel_color_stack_int=\count304
+\l__pdf_internal_box=\box58
 )
 (./report.aux)
 \openout1 = `report.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/ntxmi/m/it on input line 19.
+LaTeX Font Info:    Checking defaults for OML/ntxmi/m/it on input line 20.
 LaTeX Font Info:    Trying to load font information for OML+ntxmi on input line
- 19.
+ 20.
  (/usr/local/texlive/2020/texmf-dist/tex/latex/newtx/omlntxmi.fd
 File: omlntxmi.fd 2015/08/25 Fontinst v1.933 font definitions for OML/ntxmi.
 )
-LaTeX Font Info:    ... okay on input line 19.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 19.
-LaTeX Font Info:    ... okay on input line 19.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 19.
-LaTeX Font Info:    ... okay on input line 19.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 19.
-LaTeX Font Info:    ... okay on input line 19.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 19.
-LaTeX Font Info:    ... okay on input line 19.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 19.
-LaTeX Font Info:    ... okay on input line 19.
-LaTeX Font Info:    Checking defaults for U/ntxexa/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 20.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 20.
+LaTeX Font Info:    ... okay on input line 20.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 20.
+LaTeX Font Info:    ... okay on input line 20.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 20.
+LaTeX Font Info:    ... okay on input line 20.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 20.
+LaTeX Font Info:    ... okay on input line 20.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 20.
+LaTeX Font Info:    ... okay on input line 20.
+LaTeX Font Info:    Checking defaults for U/ntxexa/m/n on input line 20.
 LaTeX Font Info:    Trying to load font information for U+ntxexa on input line 
-19.
+20.
 (/usr/local/texlive/2020/texmf-dist/tex/latex/newtx/untxexa.fd
 File: untxexa.fd 2012/04/16 Fontinst v1.933 font definitions for U/ntxexa.
 )
-LaTeX Font Info:    ... okay on input line 19.
-LaTeX Font Info:    Checking defaults for LMS/ntxsy/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 20.
+LaTeX Font Info:    Checking defaults for LMS/ntxsy/m/n on input line 20.
 LaTeX Font Info:    Trying to load font information for LMS+ntxsy on input line
- 19.
+ 20.
 
 (/usr/local/texlive/2020/texmf-dist/tex/latex/newtx/lmsntxsy.fd
 File: lmsntxsy.fd 2016/07/02 Fontinst v1.933 font definitions for LMS/ntxsy.
 )
-LaTeX Font Info:    ... okay on input line 19.
-LaTeX Font Info:    Checking defaults for LMX/ntxexx/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 20.
+LaTeX Font Info:    Checking defaults for LMX/ntxexx/m/n on input line 20.
 LaTeX Font Info:    Trying to load font information for LMX+ntxexx on input lin
-e 19.
+e 20.
 
 (/usr/local/texlive/2020/texmf-dist/tex/latex/newtx/lmxntxexx.fd
 File: lmxntxexx.fd 2016/07/03 Fontinst v1.933 font definitions for LMX/ntxexx.
 )
-LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    ... okay on input line 20.
 
 (/usr/local/texlive/2020/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count300
-\scratchdimen=\dimen191
-\scratchbox=\box51
-\nofMPsegments=\count301
-\nofMParguments=\count302
+\scratchcounter=\count305
+\scratchdimen=\dimen197
+\scratchbox=\box59
+\nofMPsegments=\count306
+\nofMParguments=\count307
 \everyMPshowfont=\toks31
-\MPscratchCnt=\count303
-\MPscratchDim=\dimen192
-\MPnumerator=\count304
-\makeMPintoPDFobject=\count305
+\MPscratchCnt=\count308
+\MPscratchDim=\dimen198
+\MPnumerator=\count309
+\makeMPintoPDFobject=\count310
 \everyMPtoPDFconversion=\toks32
 ) (/usr/local/texlive/2020/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
@@ -612,22 +663,22 @@ Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
 
 ABD: EverySelectfont initializing macros
-LaTeX Info: Redefining \selectfont on input line 19.
-\c@mv@tabular=\count306
-\c@mv@boldtabular=\count307
+LaTeX Info: Redefining \selectfont on input line 20.
+\c@mv@tabular=\count311
+\c@mv@boldtabular=\count312
 
 (/usr/local/texlive/2020/texmf-dist/tex/latex/upquote/upquote.sty
 Package: upquote 2012/04/19 v1.3 upright-quote and grave-accent glyphs in verba
 tim
 )
-LaTeX Info: Redefining \microtypecontext on input line 19.
+LaTeX Info: Redefining \microtypecontext on input line 20.
 Package microtype Info: Generating PDF output.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using default protrusion set `alltext'.
 Package microtype Info: Automatic font expansion enabled (level 2),
 (microtype)             stretch: 20, shrink: 20, step: 1, non-selected.
 Package microtype Info: Using expansion set `alltext'.
-LaTeX Info: Redefining \showhyphens on input line 19.
+LaTeX Info: Redefining \showhyphens on input line 20.
 Package microtype Info: No adjustment of tracking.
 Package microtype Info: No adjustment of interword spacing.
 Package microtype Info: No adjustment of character kerning.
@@ -670,100 +721,206 @@ File: mt-ptm.cfg 2006/04/20 v1.7 microtype config. file: Times (RS)
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
 LaTeX Font Info:    Font shape `T1/ntxtlf/b/n' will be
-(Font)              scaled to size 12.0pt on input line 22.
-LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 17.28pt on input line 31.
-LaTeX Font Info:    Font shape `T1/ntxtlf/b/n' will be
-(Font)              scaled to size 17.28pt on input line 31.
+(Font)              scaled to size 12.0pt on input line 29.
+
+Package natbib Warning: Citation `harris1954distributional' on page 1 undefined
+ on input line 31.
+
+
+Package natbib Warning: Citation `blei2003latent' on page 1 undefined on input 
+line 33.
+
+
+Package natbib Warning: Citation `ananthram2020event' on page 1 undefined on in
+put line 41.
+
+[1
+
+{/usr/local/texlive/2020/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
 LaTeX Font Info:    Trying to load font information for OT1+ntxtlf on input lin
-e 43.
+e 49.
+
 (/usr/local/texlive/2020/texmf-dist/tex/latex/newtx/ot1ntxtlf.fd
 File: ot1ntxtlf.fd 2015/01/17 v1.0 font definition file for OT1/ntx/tlf
 )
 LaTeX Font Info:    Font shape `OT1/ntxtlf/m/n' will be
-(Font)              scaled to size 12.0pt on input line 43.
+(Font)              scaled to size 12.0pt on input line 49.
 LaTeX Font Info:    Font shape `OT1/ntxtlf/m/n' will be
-(Font)              scaled to size 8.8pt on input line 43.
+(Font)              scaled to size 8.8pt on input line 49.
 LaTeX Font Info:    Font shape `OT1/ntxtlf/m/n' will be
-(Font)              scaled to size 6.6pt on input line 43.
+(Font)              scaled to size 6.6pt on input line 49.
 LaTeX Font Info:    Trying to load font information for U+ntxmia on input line 
-43.
+49.
 
 (/usr/local/texlive/2020/texmf-dist/tex/latex/newtx/untxmia.fd
 File: untxmia.fd 2018/04/14 Fontinst v1.933 font definitions for U/ntxmia.
 )
 LaTeX Font Info:    Trying to load font information for U+ntxsym on input line 
-43.
+49.
 
 (/usr/local/texlive/2020/texmf-dist/tex/latex/newtx/untxsym.fd
 File: untxsym.fd 2015/03/20 Fontinst v1.933 font definitions for U/ntxsym.
 )
 LaTeX Font Info:    Trying to load font information for U+ntxsyc on input line 
-43.
+49.
 
 (/usr/local/texlive/2020/texmf-dist/tex/latex/newtx/untxsyc.fd
 File: untxsyc.fd 2012/04/12 Fontinst v1.933 font definitions for U/ntxsyc.
 )
 LaTeX Font Info:    Font shape `OT1/ntxtlf/b/n' will be
-(Font)              scaled to size 12.0pt on input line 43.
+(Font)              scaled to size 12.0pt on input line 49.
 LaTeX Font Info:    Font shape `OT1/ntxtlf/b/n' will be
-(Font)              scaled to size 8.8pt on input line 43.
+(Font)              scaled to size 8.8pt on input line 49.
 LaTeX Font Info:    Font shape `OT1/ntxtlf/b/n' will be
-(Font)              scaled to size 6.6pt on input line 43.
+(Font)              scaled to size 6.6pt on input line 49.
+LaTeX Font Info:    Font shape `T1/ntxtlf/m/it' will be
+(Font)              scaled to size 12.0pt on input line 69.
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 14.4pt on input line 55.
-LaTeX Font Info:    Font shape `T1/ntxtlf/b/n' will be
-(Font)              scaled to size 14.4pt on input line 55.
- [1
+(Font)              scaled to size 8.8pt on input line 69.
+LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
+(Font)              scaled to size 6.6pt on input line 69.
+ [2]
 
-{/usr/local/texlive/2020/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-LaTeX Font Info:    Font shape `OT1/ntxtlf/m/n' will be
-(Font)              scaled to size 14.4pt on input line 78.
-LaTeX Font Info:    Font shape `OT1/ntxtlf/m/n' will be
-(Font)              scaled to size 10.5pt on input line 78.
-LaTeX Font Info:    Font shape `OT1/ntxtlf/m/n' will be
-(Font)              scaled to size 7.9pt on input line 78.
-LaTeX Font Info:    Font shape `OT1/ntxtlf/b/n' will be
-(Font)              scaled to size 14.4pt on input line 78.
-LaTeX Font Info:    Font shape `OT1/ntxtlf/b/n' will be
-(Font)              scaled to size 10.5pt on input line 78.
-LaTeX Font Info:    Font shape `OT1/ntxtlf/b/n' will be
-(Font)              scaled to size 7.9pt on input line 78.
+Package natbib Warning: Citation `das2015gaussian' on page 3 undefined on input
+ line 92.
 
-Overfull \hbox (20.17328pt too wide) detected at line 97
+
+Package natbib Warning: Citation `kingma2013auto' on page 3 undefined on input 
+line 94.
+
+
+Package natbib Warning: Citation `lewis2004rcv1' on page 3 undefined on input l
+ine 100.
+
+[3]
+LaTeX Font Info:    Trying to load font information for T1+ntxsups on input lin
+e 104.
+ (/usr/local/texlive/2020/texmf-dist/tex/latex/newtx/t1ntxsups.fd
+File: t1ntxsups.fd 2015/01/17 v1.0
+)
+LaTeX Font Info:    Font shape `T1/ntxsups/m/n' will be
+(Font)              scaled to size 12.0pt on input line 104.
+Package microtype Info: Loading generic protrusion settings for font family
+(microtype)             `ntxsups' (encoding: T1).
+(microtype)             For optimal results, create family-specific settings.
+(microtype)             See the microtype manual for details.
+Package microtype Info: Character `textendash ' is missing
+(microtype)             in font `T1/ntxsups/m/n/12'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `textemdash ' is missing
+(microtype)             in font `T1/ntxsups/m/n/12'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `textquotedblleft ' is missing
+(microtype)             in font `T1/ntxsups/m/n/12'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `textquotedblright ' is missing
+(microtype)             in font `T1/ntxsups/m/n/12'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `AE ' is missing
+(microtype)             in font `T1/ntxsups/m/n/12'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `quotesinglbase ' is missing
+(microtype)             in font `T1/ntxsups/m/n/12'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `quotedblbase ' is missing
+(microtype)             in font `T1/ntxsups/m/n/12'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `guilsinglleft ' is missing
+(microtype)             in font `T1/ntxsups/m/n/12'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `guilsinglright ' is missing
+(microtype)             in font `T1/ntxsups/m/n/12'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `guillemotleft ' is missing
+(microtype)             in font `T1/ntxsups/m/n/12'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `guillemotright ' is missing
+(microtype)             in font `T1/ntxsups/m/n/12'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `textquestiondown ' is missing
+(microtype)             in font `T1/ntxsups/m/n/12'.
+(microtype)             Ignoring protrusion settings for this character.
+LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
+(Font)              scaled to size 10.0pt on input line 104.
+LaTeX Font Info:    Font shape `T1/ntxsups/m/n' will be
+(Font)              scaled to size 10.0pt on input line 104.
+Package microtype Info: Character `textendash ' is missing
+(microtype)             in font `T1/ntxsups/m/n/10'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `textemdash ' is missing
+(microtype)             in font `T1/ntxsups/m/n/10'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `textquotedblleft ' is missing
+(microtype)             in font `T1/ntxsups/m/n/10'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `textquotedblright ' is missing
+(microtype)             in font `T1/ntxsups/m/n/10'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `AE ' is missing
+(microtype)             in font `T1/ntxsups/m/n/10'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `quotesinglbase ' is missing
+(microtype)             in font `T1/ntxsups/m/n/10'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `quotedblbase ' is missing
+(microtype)             in font `T1/ntxsups/m/n/10'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `guilsinglleft ' is missing
+(microtype)             in font `T1/ntxsups/m/n/10'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `guilsinglright ' is missing
+(microtype)             in font `T1/ntxsups/m/n/10'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `guillemotleft ' is missing
+(microtype)             in font `T1/ntxsups/m/n/10'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `guillemotright ' is missing
+(microtype)             in font `T1/ntxsups/m/n/10'.
+(microtype)             Ignoring protrusion settings for this character.
+Package microtype Info: Character `textquestiondown ' is missing
+(microtype)             in font `T1/ntxsups/m/n/10'.
+(microtype)             Ignoring protrusion settings for this character.
+
+Overfull \hbox (20.17328pt too wide) detected at line 141
+[]
+ []
+
+[4]
+Overfull \hbox (23.581pt too wide) detected at line 154
 []
  []
 
 
-Overfull \hbox (23.581pt too wide) detected at line 110
-[]
- []
+Package natbib Warning: There were undefined citations.
 
-[2] [3] (./report.aux) ) 
+[5] (./report.aux) ) 
 Here is how much of TeX's memory you used:
- 10622 strings out of 480608
- 154598 string characters out of 5903631
- 452511 words of memory out of 5000000
- 26188 multiletter control sequences out of 15000+600000
- 607123 words of font info for 202 fonts, out of 8000000 for 9000
+ 11576 strings out of 480608
+ 169702 string characters out of 5903631
+ 476797 words of memory out of 5000000
+ 27094 multiletter control sequences out of 15000+600000
+ 590616 words of font info for 183 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 41i,20n,60p,845b,228s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/local/texlive/2020/texmf-dist/fonts/enc/dvips/new
-tx/ntx-ot1-tlf.enc}{/usr/local/texlive/2020/texmf-dist/fonts/enc/dvips/newtx/nt
-x-ec-tlf.enc}</usr/local/texlive/2020/texmf-dist/fonts/type1/public/newtx/NewTX
-BMI.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/newtx/NewTXMI.pf
-b></usr/local/texlive/2020/texmf-dist/fonts/type1/public/newtx/NewTXMI7.pfb></u
-sr/local/texlive/2020/texmf-dist/fonts/type1/public/newtx/txbmiaX.pfb></usr/loc
-al/texlive/2020/texmf-dist/fonts/type1/public/newtx/txexs.pfb></usr/local/texli
-ve/2020/texmf-dist/fonts/type1/public/newtx/txmiaX.pfb></usr/local/texlive/2020
-/texmf-dist/fonts/type1/public/newtx/txsys.pfb></usr/local/texlive/2020/texmf-d
-ist/fonts/type1/public/newtx/ztmb.pfb></usr/local/texlive/2020/texmf-dist/fonts
-/type1/public/newtx/ztmr.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/pu
-blic/boondox/zxxrw8a.pfb>
-Output written on report.pdf (3 pages, 143253 bytes).
+ 41i,20n,60p,880b,450s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/local/texlive/2020/texmf-dist/fonts/enc/dvips/newtx/n
+txsups_t1.enc}{/usr/local/texlive/2020/texmf-dist/fonts/enc/dvips/newtx/ntx-ec-
+tlf.enc}{/usr/local/texlive/2020/texmf-dist/fonts/enc/dvips/newtx/ntx-ot1-tlf.e
+nc}</usr/local/texlive/2020/texmf-dist/fonts/type1/public/newtx/NewTXBMI.pfb></
+usr/local/texlive/2020/texmf-dist/fonts/type1/public/newtx/NewTXMI.pfb></usr/lo
+cal/texlive/2020/texmf-dist/fonts/type1/public/newtx/NewTXMI7.pfb></usr/local/t
+exlive/2020/texmf-dist/fonts/type1/public/newtx/ntxsups-Regular.pfb></usr/local
+/texlive/2020/texmf-dist/fonts/type1/public/newtx/txbmiaX.pfb></usr/local/texli
+ve/2020/texmf-dist/fonts/type1/public/newtx/txexs.pfb></usr/local/texlive/2020/
+texmf-dist/fonts/type1/public/newtx/txmiaX.pfb></usr/local/texlive/2020/texmf-d
+ist/fonts/type1/public/newtx/txsys.pfb></usr/local/texlive/2020/texmf-dist/font
+s/type1/public/newtx/ztmb.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/p
+ublic/newtx/ztmr.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/new
+tx/ztmri.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/boondox/zxx
+rw8a.pfb>
+Output written on report.pdf (5 pages, 199623 bytes).
 PDF statistics:
- 58 PDF objects out of 1000 (max. 8388607)
- 42 compressed objects within 1 object stream
+ 73 PDF objects out of 1000 (max. 8388607)
+ 53 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 45057 words of extra memory for PDF output out of 51595 (max. 10000000)
+ 36865 words of extra memory for PDF output out of 42996 (max. 10000000)
 

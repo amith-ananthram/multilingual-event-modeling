@@ -7,6 +7,7 @@
 \usepackage{xcolor}
 \usepackage{graphicx}
 \usepackage{array, amsmath, caption, tabularx,  ragged2e,  booktabs}
+\usepackage[ruled,vlined]{algorithm2e}
 
 \newcommand{\ghighlight}[1]{%
   \colorbox{green!50}{$\displaystyle#1$}}
@@ -19,63 +20,106 @@
 \begin{document}
 
 \begin{flushleft}
-\textbf{Project} \\
-Amith Ananthram (aa4461f) \\
+Amith Ananthram (aa4461) \\
+Discovering Events in  Multilingual News Documents \\ 
+with Word Embedding Based Topic Modeling \\
 \today
 \end{flushleft}
 
-\vspace{0.1in}
+\textbf{1 Introduction}
 
-\normalsize
+Unsupervised and self-supervised learning techniques, applied to large text corpora, have dominated natural language processing (NLP) in recent years.  These approaches are underpinned by Harris' distributional hypothesis \cite{harris1954distributional}: words, sentences, or even documents that appear in similar contexts are likely similar themselves.  You can recognize them by the company they keep.
 
-\section{Motivation}
+Latent Dirichlet Allocation \cite{blei2003latent}, an early success in applying probabilistic modeling to NLP, can be viewed as an extension of this simple idea.  Documents that contain the same sets of words likely express the same topic.  By balancing sparsity in the distribution of topics over words against sparsity in the distribution of documents over topics, LDA is able to find sets of words (topics) and distributions over those sets of words (document proportions) that meaningfully explain a text corpus.  More impressively, it uncovers this latent structure in a completely unsupervised manner.
 
-\section{Related Work}
+While LDA is powerful, it is limited in a few important ways.  First, because topics are modeled as distributions over tokens in a vocabulary, they are regularly heterogeneous, sometimes in ways that lack semantic coherence.  While a topic that places mass on ``Kuwait", ``Saddam Hussein", and ``oil" can reasonably be interpreted as referencing Iraq's invasion of its neighbor, a topic which favors ``Hollywood", ``explain", and ``referendum" (discovered during my homework assignment) demands a good deal of imagination.  Second, because LDA operates on a fixed vocabulary, it is difficult to adapt a fully trained model to new documents which contain (possibly important) words outside of its vocabulary.  Finally, because LDA operates on the discrete tokens of its vocabulary, it is unable to find shared latent structure across languages in multilingual corpora.
 
-- LDA
-- Gaussian Embeddings
-- topic modeling for events
+In this work, I present a method for discovering events in multilingual news articles by addressing some of these limitations, arrived at through several iterations over Box's loop.  It does so by 1) modeling the semantic senses present in the corpus in a multilingual continuous embedding space and 2) the named entities involved in the corpus in a discrete normalized space.  I evaluate two separate methods for approximating the relevant posteriors, Gibbs sampling and autoencoding variational Bayes, and share findings for each. 
 
-\section{Modeling Events}
+\textbf{2 Motivation}
 
-noun and verb only, noun and verb and transliterated named entity, language news correction
+Clustering multilingual documents in meaningful ways enables a large variety of downstream NLP tasks.  Such clusters regularly exhibit a distributional structure that is more predictable than the structure exhibited by the full corpus, affording distant supervision techniques in machine translation and information extraction less noisy training examples.  In my own research in relation extraction, I currently rely on descriptions of date-marked events to find sentences in news articles that describe the same relation \cite{ananthram2020event}.  By leveraging an unsupervised topic model to discover these clusters instead of the limited set of labeled events on Wikipedia, I hope to greatly expand my training corpus and enable code-switched training.
 
-\begin{equation*}
-p(\bm{\mu}, \bm{\Sigma}, \bm{\theta}, \bm{\zeta}, \bm{x}) = \prod^{K}_{k} p(\mu_k)p(\Sigma_k)\prod^N_{i}(p(\theta_i)\prod^M_{j}(p(\zeta_{ij} | \theta_i)p(x_{ij} | \zeta_{ij}, \mu_{\zeta_{ij}}, \Sigma_{\zeta_{ij}}))
-\end{equation*}
+Such a technique could also benefit other disciplines.  Clusters of multilingual news articles describing the same event could give historians and sociologists an easier way to study how the same set of events are covered in different parts of the world.   One possible extension could be automatically monitoring the freedom of the press in different nations based on these clusters.
 
-\section{Inference}
+\textbf{3 Modeling Events}
 
-- Gibbs (Neal)
-				- Variational Inference (only works when…)	
-				- Black-box VI: auto encoding variational Bayes, auto encoding variational Bayes for topic models
+In broad strokes, there exists a fixed set of semantic senses whose union describe all news articles.  This is evidenced in part by the topic tags that regularly accompany such articles.  But, two articles about the market more likely than not describe different events -- what disambiguates them are the specific entities involved.  Building on these intuitions, I present a generative process designed to reveal the latent structure we seek: events.
 
-\section{Experiments}
+Equation $1$ describes the first model, a generative process that models the semantic senses present in a multilingual corpus as $K$ multivariate Gaussian distributions with mean $\mu_k$ and covariance $\Sigma_k$ in the space of a set of word embeddings $\bm{w}$. 
 
-\subsection{Dataset}
+\begin{equation}
+p(\bm{\mu}, \bm{\Sigma}, \bm{\theta}, \bm{\zeta}, \bm{w}) = \prod^{K}_{k} p(\mu_k; \alpha)p(\Sigma_k;\eta)\prod^N_{i}(p(\theta_i;\iota)\prod^M_{j}(p(\zeta_{ij} | \theta_i)p(w_{ij} | \zeta_{ij}, \mu_{\zeta_{ij}}, \Sigma_{\zeta_{ij}}))
+\end{equation}
 
-- talk about topic tags
+Equation $2$ describes the second model, a generative process that models the normalized named entities (persons, places, etc) present in a multlingual corpus as $H$ categorical distributions $\beta$ over the shared vocabulary.  While this model is simply LDA, the novelty lies in the pre-processing which normalizes named entities across different character sets.
 
-\subsection{Feature extraction}
+\begin{equation}
+p(\bm{\beta}, \bm{\phi}, \bm{\xi}, \bm{e}) = \prod^{H}_{h} p(\beta_h; o)\prod^N_{i}(p(\phi_i; \upsilon)\prod^M_{j}(p(\xi_{ij} | \phi_i)p(e_{ij} | \xi_{ij}, \beta_{\xi_{ij}}))
+\end{equation}
 
-\subsection{Hyperparameters}
+By modeling the nouns and verbs in an article as independent from the normalized named entities in an article, I can compose equations $1$ and $2$ into a more complicated model simply by taking their products, resulting in the complete generative model described in Algorithm 1.  
 
-\section{Results}
+\begin{algorithm}[H]
+\SetAlgoLined
+\For{each semantic sense $k$} {
+ 	Draw semantic sense mean $\mu_k \sim \text{Normal}(\alpha_\mu, \alpha_\Sigma)$\;
+ 	Draw semantic sense covariance $\Sigma_k \sim \text{Wishart}^{-1}(\eta_\nu, \eta_\Psi)$\;
+ }
+ \For{each named entity topic $h$} {
+ 	Draw named entity distribution $\beta_h \sim \text{Dirichlet}(o)$\;
+ }
+ \For{each document $w_i, e_i$} {
+ 	Draw semantic sense proportions $\theta_i \sim \text{Dirichlet}(\iota)$\;
+ 	\For{each noun or verb embedding $w_{ij}$} {
+		Sample sense $\zeta_{ij} \sim \text{Multinomial}(\theta_i)$\; 	
+		Sample noun or verb embedding $w_{ij} \sim \text{Normal}(\mu_{\zeta_{ij}}, \Sigma_{\zeta_{ij}})$\;
+ 	}
+ 	
+ 	Draw named entity proportions $\phi_i \sim \text{Dirichlet}(\upsilon)$\;
+ 	\For{each named entity $e_{ij}$} {
+		Sample sense $\xi_{ij} \sim \text{Multinomial}(\phi_i)$\; 	
+		Sample named entity $e_{ij} \sim \text{Multinomial}(\beta_{\xi{ij}})$\;
+ 	}
+ }
+ \caption{Complete generative model}
+\end{algorithm}
 
- derived complete conditionals, Gibbs sampler
-				- implemented for model 1 (derived conditionals in Appendix), extremely slow
-					- esp because operating per datapoint
-			- auto encoding variational Bayes implementation
+\textbf{4 Inference}
 
-\section{Conclusion}
+To approximate the posterior distributions of my models, I evaluate both Gibbs sampling and autoencoding variational Bayes, improving naive implementations with techniques adapted from the literature.
 
-- future work
+For Gibbs sampling, I began by deriving the complete conditionals for latent variables in my model (presented in the Appendix).  A quick inspection of these complete conditionals reveals a computationally expensive sampler, requiring the inversion of multiple large matrices at every iteration $O(d^3)$.  \cite{das2015gaussian} derive a collapsed sampler that avoids these expensive inversions by leveraging the Cholesky decomposition and confining mutations to rank one operations.  I adopt their technique to improve my sampler.
 
-\pagebreak
+For autoencoding variational Bayes, I adapt the methodology presented in \cite{kingma2013auto}.  The greatly speed up inference by 1) collapsing the individual document-word assignment terms via amortization and 2) enabling re-parameterization of the Dirichlet prior on topic proportions with a log-normal distribution derived via Laplace approximation in the soft-max basis (allowing  unconstrained optimization).  While this enables extremely fast inference, the global latent variables of my model (the topic distributions) lose their Bayesian treatment, becoming learned parameters in the decoder network, providing an interesting point of comparison to the Gibbs sampling approach.
 
-\section{Appendix}
+\textbf{5 Experiments}
 
-\subsection{Derivation of complete conditionals for $\mu_k$ and $\Sigma_k$}
+\textbf{Dataset}
+
+I use the Reuters RCV1 and RCV2 corpora \cite{lewis2004rcv1}.  While this corpus contains millions of articles in many languages from $1996$ and $1997$, I select only the $100k$ English, Spanish and Russian articles from the last 3 months of $1996$, allowing me to evaluate more experimental variants in languages with relatively more (English and Spanish ) and relatively less (Russian) vocabulary overlap.
+
+\textbf{Feature extraction}
+
+Using SpaCy\footnote{https://spacy.io/} and Stanza\footnote{https://stanfordnlp.github.io/stanza/} language models, I extract lemmatized forms of all nouns, verbs and named entities, producing two bag of words representations for each article (one of all noun and verb lemmas, another of all named entities).
+
+I replace all noun and verb lemmas with their corresponding dense representation as provided by Facebook's MUSE aligned multilingual embeddings\footnote{https://ai.facebook.com/tools/muse/}.  I normalize all non-English named entities by translating them into English with Helsinki NLP's machine translation models\footnote{https://huggingface.co/Helsinki-NLP}, producing a shared vocabulary of named entities across all the articles in the corpus.
+
+\textbf{Inference}
+
+While I implemented my Gibbs sampler from scratch in Python, I relied on many of the primitives in Pyro\footnote{https://pyro.ai/} to implement my variational autoencoder (in addition to a very helpful tutorial\footnote{https://github.com/pyro-ppl/pyro/pull/2655}).
+
+\textbf{6 Results}
+
+[TODO once I have results]
+
+\textbf{7 Conclusion}
+
+[TODO once I have results]
+
+\textbf{8 Appendix}
+
+\textbf{Derivation of complete conditionals for $\mu_k$ and $\Sigma_k$}
 
 Below is the derivation of the complete conditional distributions for $\mu_k$ and $\Sigma_k$, the latent variables that govern our multivariate Gaussian distributions which model semantic sense (with Gaussian and inverse-Wishart priors, respectively).  Note that these are the same for both variants $1$ and $2$ of our model as the bag of word embeddings is modeled independently from the bag of words.
 
@@ -110,8 +154,3 @@ p(\Sigma_k | \bm{\mu}, \Sigma_{-k}, \bm{\theta}, \bm{\zeta}, \bm{x}) & \propto p
 \end{equation*}
 
 \end{document}
-
-%%% Local Variables:
-%%% mode: latex
-%%% TeX-master: t
-%%% End:

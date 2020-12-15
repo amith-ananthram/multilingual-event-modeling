@@ -11,6 +11,7 @@ import pandas as pd
 from lazy_load import lazy
 from datetime import datetime
 import matplotlib.pyplot as plt
+from unidecode import unidecode
 from sortedcontainers import SortedSet
 from collections import Counter, defaultdict
 
@@ -211,7 +212,11 @@ def get_named_entities(lang, parsed):
 		if named_entity.label_ not in NAMED_ENTITY_LABELS:
 			continue
 
-		named_entities[named_entity.text.strip().lower()] += 1
+		named_entity = named_entity.text.strip().lower()
+		if lang == 'en':
+			# remove all accents (normalize)
+			named_entity = unidecode(named_entity)
+		named_entities[named_entity] += 1
 	return named_entities
 
 DONE_PROCESSING = False
@@ -254,13 +259,15 @@ def translate_named_entities(lang, named_entities):
 		raise Exception("Unsupported language: %s" % lang)
 
 	translated = {}
-	for i in range(0, len(named_entities) / BATCH_SIZE):
-		batch = named_entities[i*BATCH_SIZE, (i+1)*BATCH_SIZE]
+	for i in range(0, int(len(named_entities) / BATCH_SIZE) + 1):
+		batch = named_entities[i*BATCH_SIZE:(i+1)*BATCH_SIZE]
 		inputs = tokenizer.prepare_seq2seq_batch(batch, return_tensors="pt").to(device)
-		outputs = model.generate(inputs)
+		outputs = model.generate(**inputs)
+
+		assert len(batch) == len(outputs)
 
 		for (named_entity, output) in zip(batch, outputs):
-			translate[named_entity] = tokenizer.decode(output, skip_special_tokens=True).strip().lower()
+			translated[named_entity] = unidecode(tokenizer.decode(output, skip_special_tokens=True).strip().lower())
 
 	return translated
 
@@ -302,10 +309,10 @@ def preprocess_articles(langs, date_start=None, date_end=None, pca_dim=300):
 		date_start.strftime("%m%d%Y"), date_end.strftime("%m%d%Y")))
 	noun_and_verb_embeddings_path = os.path.join(REUTERS_DIRECTORY, 'preprocessed/%s--%s-noun-and-verb-embeddings.npy' % (
 		date_start.strftime("%m%d%Y"), date_end.strftime("%m%d%Y")))
-	noun_and_verb_data_path = os.path.join(REUTERS_DIRECTORY, 'preprocessed/%s--%s-noun-and-verb-data.npy' % (
+	article_nouns_and_verbs_path = os.path.join(REUTERS_DIRECTORY, 'preprocessed/%s--%s-article-nouns-and-verbs.pkl' % (
 		date_start.strftime("%m%d%Y"), date_end.strftime("%m%d%Y")))
 
-	if not all(map(os.path.exists, [noun_and_verb_vocabulary_path, noun_and_verb_embeddings_path, noun_and_verb_data_path])):
+	if not all(map(os.path.exists, [noun_and_verb_vocabulary_path, noun_and_verb_embeddings_path, article_nouns_and_verbs_path])):
 		lang_counts = Counter(map(lambda article: article.lang, articles))
 			
 		print("%s articles!" % (len(articles)))
@@ -358,29 +365,35 @@ def preprocess_articles(langs, date_start=None, date_end=None, pca_dim=300):
 			print("Reducing embedding dimensionality from %s to %s" % (noun_and_verb_embeddings.shape[1], pca_dim))
 			noun_and_verb_embeddings = PCA(pca_dim).fit_transform(noun_and_verb_embeddings)
 
-		article_noun_and_verb_counts = np.zeros((len(articles), len(noun_and_verb_vocabulary)))
+		article_nouns_and_verbs = []
 		for article_id, article in enumerate(articles):
+			article_nouns_and_verbs.append([])
 			for noun_or_verb, count in article.nouns_and_verbs.items():
 				if (article.lang, noun_or_verb) not in noun_and_verb_vocabulary:
 					continue
 
-				article_noun_and_verb_counts[article_id][noun_and_verb_vocabulary.index((article.lang, noun_or_verb))] = count 
+				noun_or_verb_id = noun_and_verb_vocabulary.index((article.lang, noun_or_verb))
+				for _ in range(count):
+					article_nouns_and_verbs[-1].append(noun_or_verb_id)
+
 
 		with open(noun_and_verb_vocabulary_path, 'wb') as f:
 			pickle.dump(noun_and_verb_vocabulary, f)
 
 		np.save(noun_and_verb_embeddings_path.strip(".npy"), noun_and_verb_embeddings)
 
-		np.save(noun_and_verb_data_path.strip(".npy"), article_noun_and_verb_counts)
+		with open(article_nouns_and_verbs_path, 'wb') as f:
+			pickle.dump(article_nouns_and_verbs, f)
 
-		print("Wrote nouns and verbs of size (%s, %s) to %s" % (*article_noun_and_verb_counts.shape, noun_and_verb_data_path))
+		print("Wrote nouns and verbs of size to %s" % (noun_and_verb_data_path))
 	else:
 		with open(noun_and_verb_vocabulary_path, 'rb') as f:
 			noun_and_verb_vocabulary = pickle.load(f)
 
 		noun_and_verb_embeddings = np.load(noun_and_verb_embeddings_path)
 
-		article_noun_and_verb_counts = np.load(noun_and_verb_data_path)
+		with open(article_nouns_and_verbs_path, 'rb') as f:
+			article_nouns_and_verbs = pickle.load(f)
 
 	###
 	# NAMED ENTITIES 
@@ -388,10 +401,10 @@ def preprocess_articles(langs, date_start=None, date_end=None, pca_dim=300):
 
 	named_entity_vocabulary_path = os.path.join(REUTERS_DIRECTORY, 'preprocessed/%s--%s-named-entities.pkl' % (
 		date_start.strftime("%m%d%Y"), date_end.strftime("%m%d%Y")))
-	named_entity_data_path = os.path.join(REUTERS_DIRECTORY, 'preprocessed/%s--%s-named-entities-data.npy' % (
+	article_named_entities_path = os.path.join(REUTERS_DIRECTORY, 'preprocessed/%s--%s-article-named-entities.pkl' % (
 		date_start.strftime("%m%d%Y"), date_end.strftime("%m%d%Y")))
 
-	if not all(map(os.path.exists, [named_entity_vocabulary_path, named_entity_data_path])):
+	if not all(map(os.path.exists, [named_entity_vocabulary_path, article_named_entities_path])):
 		named_entities = set()
 		for article in articles:
 			for named_entity in article.named_entities:
@@ -422,8 +435,9 @@ def preprocess_articles(langs, date_start=None, date_end=None, pca_dim=300):
 
 		print("Grouped named entities: %s" % len(named_entity_vocabulary))
 
-		article_named_entity_counts = np.zeros((len(articles), len(named_entity_vocabulary)))
+		article_named_entities = []
 		for article_id, article in enumerate(articles):
+			article_named_entities.append([])
 			for named_entity, count in article.named_entities.items():
 				if article.lang == 'es':
 					named_entity = es_named_entities_translated[named_entity]
@@ -433,24 +447,28 @@ def preprocess_articles(langs, date_start=None, date_end=None, pca_dim=300):
 				if named_entity not in named_entity_vocabulary:
 					continue
 
-				article_named_entity_counts[article_id][named_entity_vocabulary.index(named_entity)] += count 
+				named_entity_id = named_entity_vocabulary.index(named_entity)
+				for _ in range(count):
+					article_named_entities[-1].append(named_entity_id)
 
 		with open(named_entity_vocabulary_path, 'wb') as f:
 			pickle.dump(named_entity_vocabulary, f)
 
-		np.save(named_entity_data_path.strip(".npy"), article_named_entity_counts)
+		with open(article_named_entities_path, 'wb') as f:
+			pickle.dump(article_named_entities, f)
 	else:
 		with open(named_entity_vocabulary_path, 'rb') as f:
 			named_entity_vocabulary = pickle.load(f)
 
-		article_named_entity_counts = np.load(named_entity_data_path)
+		with open(article_named_entities_path, 'rb') as f:
+			article_named_entities = pickle.load(f)
 
 	return articles, \
 		noun_and_verb_vocabulary, \
 		torch.tensor(noun_and_verb_embeddings), \
-		torch.tensor(article_noun_and_verb_counts).float(), \
+		article_nouns_and_verbs, \
 		named_entity_vocabulary, \
-		torch.tensor(article_named_entity_counts).float()
+		article_named_entities
 
 if __name__ == '__main__':
-	preprocess_articles(['en', 'es', 'ru'], datetime(1996, 9, 1), datetime(1996, 9, 2))
+	preprocess_articles(['en', 'es', 'ru'], datetime(1996, 9, 1), datetime(1996, 12, 1))

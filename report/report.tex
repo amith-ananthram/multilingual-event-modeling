@@ -15,6 +15,8 @@
   \colorbox{yellow!50}{$\displaystyle#1$}}
 \DeclareMathOperator{\Tr}{Tr}
 
+\allowdisplaybreaks
+
 \input{preamble}
 
 \begin{document}
@@ -49,13 +51,13 @@ In broad strokes, there exists a fixed set of semantic senses whose union descri
 Equation $1$ describes the first model, a generative process that models the semantic senses present in a multilingual corpus as $K$ multivariate Gaussian distributions with mean $\mu_k$ and covariance $\Sigma_k$ in the space of a set of word embeddings $\bm{w}$. 
 
 \begin{equation}
-p(\bm{\mu}, \bm{\Sigma}, \bm{\theta}, \bm{\zeta}, \bm{w}) = \prod^{K}_{k} p(\mu_k; \alpha)p(\Sigma_k;\eta)\prod^N_{i}(p(\theta_i;\iota)\prod^M_{j}(p(\zeta_{ij} | \theta_i)p(w_{ij} | \zeta_{ij}, \mu_{\zeta_{ij}}, \Sigma_{\zeta_{ij}}))
+p(\bm{\mu}, \bm{\Sigma}, \bm{\theta}, \bm{\zeta}, \bm{w}) = \prod^{K}_{k} p(\mu_k; m, \Sigma_k)p(\Sigma_k; \nu, \Psi)\prod^N_{i}(p(\theta_i; t)\prod^{M_i}_{j}(p(\zeta_{ij} | \theta_i)p(w_{ij} | \zeta_{ij}, \mu_{\zeta_{ij}}, \Sigma_{\zeta_{ij}}))
 \end{equation}
 
 Equation $2$ describes the second model, a generative process that models the normalized named entities (persons, places, etc) present in a multlingual corpus as $H$ categorical distributions $\beta$ over the shared vocabulary.  While this model is simply LDA, the novelty lies in the pre-processing which normalizes named entities across different character sets.
 
 \begin{equation}
-p(\bm{\beta}, \bm{\phi}, \bm{\xi}, \bm{e}) = \prod^{H}_{h} p(\beta_h; o)\prod^N_{i}(p(\phi_i; \upsilon)\prod^M_{j}(p(\xi_{ij} | \phi_i)p(e_{ij} | \xi_{ij}, \beta_{\xi_{ij}}))
+p(\bm{\beta}, \bm{\phi}, \bm{\xi}, \bm{e}) = \prod^{H}_{h} p(\beta_h; b)\prod^N_{i}(p(\phi_i; f)\prod^{M_i}_{j}(p(\xi_{ij} | \phi_i)p(e_{ij} | \xi_{ij}, \beta_{\xi_{ij}}))
 \end{equation}
 
 By modeling the nouns and verbs in an article as independent from the normalized named entities in an article, I can compose equations $1$ and $2$ into a more complicated model simply by taking their products, resulting in the complete generative model described in Algorithm 1.  
@@ -63,20 +65,19 @@ By modeling the nouns and verbs in an article as independent from the normalized
 \begin{algorithm}[H]
 \SetAlgoLined
 \For{each semantic sense $k$} {
- 	Draw semantic sense mean $\mu_k \sim \text{Normal}(\alpha_\mu, \alpha_\Sigma)$\;
- 	Draw semantic sense covariance $\Sigma_k \sim \text{Wishart}^{-1}(\eta_\nu, \eta_\Psi)$\;
+ 	Draw semantic sense mean, covariance $\mu_k, \Sigma_k \sim \text{Normal-Inverse-Wishart}(m_k, \lambda_k, \nu_k, \Psi_k)$\;
  }
  \For{each named entity topic $h$} {
- 	Draw named entity distribution $\beta_h \sim \text{Dirichlet}(o)$\;
+ 	Draw named entity distribution $\beta_h \sim \text{Dirichlet}(b_h)$\;
  }
  \For{each document $w_i, e_i$} {
- 	Draw semantic sense proportions $\theta_i \sim \text{Dirichlet}(\iota)$\;
+ 	Draw semantic sense proportions $\theta_i \sim \text{Dirichlet}(t_i)$\;
  	\For{each noun or verb embedding $w_{ij}$} {
 		Sample sense $\zeta_{ij} \sim \text{Multinomial}(\theta_i)$\; 	
 		Sample noun or verb embedding $w_{ij} \sim \text{Normal}(\mu_{\zeta_{ij}}, \Sigma_{\zeta_{ij}})$\;
  	}
  	
- 	Draw named entity proportions $\phi_i \sim \text{Dirichlet}(\upsilon)$\;
+ 	Draw named entity proportions $\phi_i \sim \text{Dirichlet}(f_i)$\;
  	\For{each named entity $e_{ij}$} {
 		Sample sense $\xi_{ij} \sim \text{Multinomial}(\phi_i)$\; 	
 		Sample named entity $e_{ij} \sim \text{Multinomial}(\beta_{\xi{ij}})$\;
@@ -125,9 +126,8 @@ Below is the derivation of the complete conditional distributions for $\mu_k$ an
 
 $W_k$ is the set of words across all documents assigned to topic $k$ with size $n_{W_k}$.  $\bar{w}_k = (1/n_{W_k})\sum^{n_{W_k}}_l w_l$.  Updated parameters for the conjugate complete conditionals are highlighted in green.  Normalizing factors (that is, factors that are constant with respect to the random variable being modeled) which are dropped from the exponents (or in rare cases raised into the exponent) are highlighted in yellow.
 
-\begin{equation*}
-\begin{split}
-p(\mu_k | \mu_{-k}, \bm{\Sigma}, \bm{\theta}, \bm{\zeta}, \bm{x}) & \propto p(\mu_k) \prod_{w \in W_k} p(w | \mu_k, \Sigma_k) \\
+\begin{align*}
+p(\mu_k | \mu_{-k}, \bm{\Sigma}, \bm{\theta}, \bm{\zeta}, \bm{w}) & \propto p(\mu_k; m_k, S_k) \prod_{w \in W_k} p(w | \mu_k, \Sigma_k) \\
 & \propto \exp{-\frac{1}{2}(\mu_k - m_k)^T S_k^{-1} (\mu_k - m_k)} \prod_{w \in W_k} \exp{-\frac{1}{2}(w - \mu_k)^T \Sigma_k^{-1} (w - \mu_k)} \\
 & \propto \exp{-\frac{1}{2}(\mu_k - m_k)^T S_k^{-1} (\mu_k - m_k)} \exp{\sum_{w \in W_k} -\frac{1}{2}(w - \mu_k)^T \Sigma_k^{-1} (w - \mu_k)} \\
 & \propto \exp{-\frac{1}{2}((\mu_k - m_k)^T S_k^{-1} (\mu_k - m_k) + \sum_{w \in W_k} (w - \mu_k)^T \Sigma_k^{-1} (w - \mu_k))} \\
@@ -137,12 +137,12 @@ p(\mu_k | \mu_{-k}, \bm{\Sigma}, \bm{\theta}, \bm{\zeta}, \bm{x}) & \propto p(\m
 & \propto \exp{-\frac{1}{2}(\mu_k^T\hat{S}_k^{-1}\mu_k - 2\mu_k^T\hat{S}_k^{-1}\ghighlight{\hat{S}_k(S_k^{-1}m_k + \Sigma_k^{-1}n_{W_k}\bar{w}_k)})} \\
 & \propto \exp{-\frac{1}{2}(\mu_k^T\hat{S}_k^{-1}\mu_k - 2\mu_k^T\hat{S}_k^{-1}\hat{m}_k + \yhighlight{\hat{m}_k^T\hat{S}_k^{-1}\hat{m}_k})} \\
 & = \mathcal{N}(\hat{m}_k, \hat{S}_k), \hat{m}_k = \hat{S}_k(S_k^{-1}m_k + \Sigma_k^{-1}n_{W_k}\bar{w}_k), \hat{S}_k^{-1} = S_k^{-1} + n_{W_k}\Sigma_k^{-1}
-\end{split}
-\end{equation*}
+\end{align*}
 
-\begin{equation*}
-\begin{split}
-p(\Sigma_k | \bm{\mu}, \Sigma_{-k}, \bm{\theta}, \bm{\zeta}, \bm{x}) & \propto p(\Sigma_k) \prod_{w \in W_k} p(w | \mu_k, \Sigma_k) \\
+Note that, as our conjugate prior is the normal inverse-Wishart distribution, $S_k = \frac{1}{\lambda}\Sigma_k$.
+
+\begin{align*}
+p(\Sigma_k | \bm{\mu}, \Sigma_{-k}, \bm{\theta}, \bm{\zeta}, \bm{w}) & \propto p(\Sigma_k) \prod_{w \in W_k} p(w | \mu_k, \Sigma_k) \\
 & \propto |\Sigma_k|^{-(\nu_k + d + 1)/2} \exp{-\frac{1}{2} \Tr{(\Psi_k\Sigma_k^{-1})}}\prod_{w \in W_k} |\Sigma_k|^{-1/2} \exp{-\frac{1}{2}(w - \mu_k)^T\Sigma_k^{-1}(w - \mu_k)} \\
 & \propto |\Sigma_k|^{-(n_{W_k} + \nu_k + d + 1)/2} \exp{-\frac{1}{2} (\Tr{(\Psi_k\Sigma_k^{-1})} + \sum_{w \in W_k} (w - \mu_k)^T\Sigma_k^{-1}(w - \mu_k))} \\
 & \propto |\Sigma_k|^{-(n_{W_k} + \nu_k + d + 1)/2} \exp{-\frac{1}{2} (\Tr{(\Psi_k\Sigma_k^{-1})} + \sum_{w \in W_k} \Tr{((w - \mu_k)^T\Sigma_k^{-1}(w - \mu_k))})} \\
@@ -150,7 +150,41 @@ p(\Sigma_k | \bm{\mu}, \Sigma_{-k}, \bm{\theta}, \bm{\zeta}, \bm{x}) & \propto p
 & \propto |\Sigma_k|^{-(n_{W_k} + \nu_k + d + 1)/2} \exp{-\frac{1}{2} (\Tr{(\Psi_k\Sigma_k^{-1} + \sum_{w \in W_k} (w - \mu_k)(w - \mu_k)^T\Sigma_k^{-1})})} \\
 & \propto |\Sigma_k|^{-(\ghighlight{n_{W_k} + \nu_k} + d + 1)/2} \exp{-\frac{1}{2} (\Tr{((\ghighlight{\Psi_k + \sum_{w \in W_k} (w - \mu_k)(w - \mu_k)^T})\Sigma_k^{-1})})} \\
 & = \mathcal{W}^{-1}(\hat{\Psi}_k, \hat{\nu}_k), \hat{\Psi}_k = \Psi_k + \sum_{w \in W_k} (w - \mu_k)(w - \mu_k)^T, \hat{\nu}_k = n_{W_k} + \nu_k 
-\end{split}
-\end{equation*}
+\end{align*}
+
+\textbf{Derivation of collapsed sampler for $\zeta_{i}$}
+
+To support faster posterior inference, we can collapse our sampler by integrating out $\bm{\mu}, \bm{\Sigma}$ and $\bm{\theta}$.  This saves us the trouble of needing to resample all the topic means, covariances and document proportions at each iteration.
+\begin{align*}
+p(\zeta_{ij} | \zeta_{-(ij)}, \bm{w}) & = \frac{p(\bm{\zeta}, \bm{w})}{p(\zeta_{-(ij)}, \bm{w})} \\
+& \propto p(\bm{\zeta}, \bm{w}) \\
+& \propto \int \int \int p(\bm{\mu}, \bm{\Sigma}, \bm{\theta}, \bm{\zeta}, \bm{w}) \,d\theta \,d\Sigma \,d\mu \\
+& \propto \int \int \int p(\bm{\mu})p(\bm{\Sigma})p(\bm{\theta})p(\bm{\zeta} | \theta)p(\bm{w} | \bm{\zeta}, \bm{\mu}, \bm{\Sigma}) \,d\theta \,d\Sigma \,d\mu \\
+& \propto \int \int p(\bm{\mu})p(\bm{\Sigma})p(\bm{w} | \bm{\zeta}, \bm{\mu}, \bm{\Sigma})\,d\Sigma \,d\mu \int p(\bm{\theta})p(\bm{\zeta} | \theta) \,d\theta 
+\end{align*}
+
+We can simplify these integrals separately, dropping terms that are constant with respect to $\zeta_{ij}$.
+
+\begin{align*}
+& \int p(\bm{\mu})p(\bm{\Sigma})p(\bm{w} | \bm{\zeta}, \bm{\mu}, \bm{\Sigma})\,d\Sigma \,d\mu \\
+& = \int \prod^{K}_{k} p(\mu_k; m, (1/\lambda)\Sigma_k)p(\Sigma_k; \nu, \Psi) \prod^{N}_i \prod^{M_i}_j p(w_{ij} | \zeta_{ij}, \mu_{\zeta_{ij}}, \Sigma_{\zeta_{ij}}) \,d\Sigma \,d\mu \\
+& = \prod^{K}_{k} \int p(\mu_k; m, (1/\lambda)\Sigma_k)p(\Sigma_k; \nu, \Psi) \prod^{N}_i \prod^{M_i}_j p(w_{ij} | \zeta_{ij}, \mu_{\zeta_{ij}}, \Sigma_{\zeta_{ij}}) \,d\Sigma_k \,d\mu_k \\
+& = \prod^{K}_{k} \int (2\pi)^{-d/2} |(1/\lambda)\Sigma_k|^{-1/2} \exp{((-1/2)(\mu_k - m_k)^T((1/\lambda)\Sigma_k)^{-1}(\mu_k - m_k))} \\
+& \times \frac{|\Psi_k|^{\nu/2}}{2^{\nu d/2}\Gamma_d(\nu/2)} |\Sigma_k|^{-(\nu + d + 1)/2} \exp{((-1/2) \Tr{\Psi \Sigma_k^{-1}})} \\
+& \times \prod^{N}_i \prod^{M_i}_j (2\pi)^{-d/2} |\Sigma_{\zeta_{ij}}|^{-1/2} \exp{((-1/2)(w_{ij} - \mu_{\zeta_{ij}})^T\Sigma_{{\zeta_{ij}}}^{-1}(w_{ij} - \mu_{{\zeta_{ij}}}))}  \,d\Sigma_k  \,d\mu_k \\
+& = \prod^{K}_{k} \int (2\pi)^{-d/2} |(1/\lambda)\Sigma_k|^{-1/2} \exp{((-1/2)(\mu_k - m_k)^T((1/\lambda)\Sigma_k)^{-1}(\mu_k - m_k))} \\
+& \times \frac{|\Psi_k|^{\nu/2}}{2^{\nu d/2}\Gamma_d(\nu/2)} |\Sigma_k|^{-(\nu + d + 1)/2} \exp{((-1/2) \Tr{\Psi \Sigma_k^{-1}})} \\
+& \times \prod_{w \in W_k} (2\pi)^{-d/2} |\Sigma_k|^{-1/2} \exp{((-1/2)(w - \mu_{k})^T\Sigma_{k}^{-1}(w - \mu_{k}))}  \,d\Sigma_k  \,d\mu_k \\
+\end{align*}
+
+\begin{align*}
+\int p(\bm{\theta})p(\bm{\zeta} | \theta) \,d\theta  & = \int \prod^N_{i}p(\theta_i; t)\prod^M_{j}p(\zeta_{ij} | \theta_i) \,d\theta \\
+ & = \prod^N_{i} \int p(\theta_i; t)\prod^M_{j}p(\zeta_{ij} | \theta_i) \,d\theta_i \\
+ & = \prod^N_{i} \frac{\Gamma(\sum^K_{k} t_k)}{\prod^K_{k} \Gamma(t_k)} \int \prod^K_{k} \theta_{ik}^{t_k - 1} \prod^{M_i}_{j} \theta_{i, \zeta_{ij}} \,d\theta_i \\
+  & = \prod^N_{i} \frac{\Gamma(\sum^K_{k} t_k)}{\prod^K_{k} \Gamma(t_k)} \int \prod^K_{k} \theta_{ik}^{t_k - 1} \prod^K_{k} \theta_{ik}^{n_{ik}} \,d\theta_i \\
+    & = \prod^N_{i} \frac{\Gamma(\sum^K_{k} t_k)}{\prod^K_{k} \Gamma(t_k)} \int \prod^K_{k} \theta_{ik}^{t_k + n_{ik} - 1} \,d\theta_i \\
+        & = \prod^N_{i} \frac{\Gamma(\sum^K_{k} t_k)}{\prod^K_{k} \Gamma(t_k)} \frac{\prod^K_{k} \Gamma(t_k + n_{ik}) }{\Gamma(\sum^K_{k} t_k + n_{ik})} \int \frac{\Gamma(\sum^K_{k} t_k + n_{ik})}{\prod^K_{k} \Gamma(t_k + n_{ik})} \prod^K_{k} \theta_{ik}^{t_k + n_{ik} - 1} \,d\theta_i \\
+        & = \prod^N_{i} \frac{\Gamma(\sum^K_{k} t_k)}{\prod^K_{k} \Gamma(t_k)} \frac{\prod^K_{k} \Gamma(t_k + n_{ik}) }{\Gamma(\sum^K_{k} t_k + n_{ik})} \\
+\end{align*}
 
 \end{document}

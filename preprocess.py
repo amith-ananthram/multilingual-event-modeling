@@ -222,10 +222,9 @@ def get_named_entities(lang, parsed):
 DONE_PROCESSING = False
 
 def preprocess_articles_worker(q, processed):
-	# global DONE_PROCESSING
+	global DONE_PROCESSING
 
-	# while not DONE_PROCESSING:
-	while not q.empty():
+	while not DONE_PROCESSING:
 		article_num, (lang, filepath, date, topics, text) = q.get()
 
 		try:
@@ -289,16 +288,14 @@ def preprocess_articles(langs, date_start=None, date_end=None, pca_dim=300):
 		articles = []
 		q = queue.Queue()
 
-		# for thread_num in range(NUM_WORKERS):
-			# threading.Thread(target=preprocess_articles_worker, args=(q, articles)).start()
+		for thread_num in range(NUM_WORKERS):
+			threading.Thread(target=preprocess_articles_worker, args=(q, articles)).start()
 		
 		for article_num, article in enumerate(get_articles(langs, date_start, date_end)):
 			q.put((article_num, article))
 
-		# q.join()
-		# DONE_PROCESSING = True
-
-		preprocess_articles_worker(q, articles)		
+		q.join()
+		DONE_PROCESSING = True
 
 		with open(extracted_path, 'wb') as f:
 			pickle.dump(articles, f)
@@ -465,7 +462,7 @@ def preprocess_articles(langs, date_start=None, date_end=None, pca_dim=300):
 
 	return articles, \
 		noun_and_verb_vocabulary, \
-		torch.tensor(noun_and_verb_embeddings), \
+		noun_and_verb_embeddings, \
 		article_nouns_and_verbs, \
 		named_entity_vocabulary, \
 		article_named_entities

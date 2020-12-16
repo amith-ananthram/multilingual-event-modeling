@@ -43,11 +43,10 @@ SAMPLER_MODES = [
 
 class CovarianceMatrix:
 	def __init__(self, matrix):
-		det = np.linalg.det(matrix)
 		# if we happent to generate a singular covariance 
 		# matrix, we increase its diagonal entries by enough 
 		# to raise its lowest eigenvalue to 1
-		if det == 0:
+		if np.linalg.det(matrix) < 1:
 			eigs, _ = np.linalg.eigh(matrix)
 			matrix += (1 - eigs[0]) * np.eye(matrix.shape[0])
 		self.matrix = matrix
@@ -106,11 +105,15 @@ class Sampler:
 
 		# the einsum below produces the sum of the outer products
 		# of the deviations of each word vector from the topic mean
-		topic_nav_devs = np.stack(topic_navs) - topic_mean 
-		topic_covariance_scale = self.nav_topic_covariance_prior_scale + \
-			np.einsum('ki,kj->ij', topic_nav_devs, topic_nav_devs)
+		if len(topic_navs) > 0:
+			topic_nav_devs = np.stack(topic_navs) - topic_mean 
+			topic_covariance_scale = self.nav_topic_covariance_prior_scale + \
+				np.einsum('ki,kj->ij', topic_nav_devs, topic_nav_devs)
+		else:
+			topic_covariance_scale = self.nav_topic_covariance_prior_scale
 
-		topic_covariance = invwishart.rvs(topic_covariance_dof, topic_covariance_scale)
+		topic_covariance = invwishart.rvs(
+			topic_covariance_dof, np.linalg.inv(topic_covariance_scale))
 
 		return topic_mean, CovarianceMatrix(topic_covariance)
 
@@ -122,29 +125,77 @@ class Sampler:
 		)[0]
 
 
-	def get_unnormalized_topic_nav_probability(self, topic_id, nav_id):
-		cache_key = ("unnorm_topic_nav_prob", topic_id, nav_id)
-		if cache_key not in self.cache:
-			nav = self.training_data.nav_embeddings[nav_id]
-			cov = self.nav_topic_covariances[-1][topic_id]
-			mean_dev = nav - self.nav_topic_means[-1][topic_id]
+	def logsumexp(self, x):
+		c = x.max()
+		return c + np.log(np.sum(np.exp(x - c)))
 
-			self.cache[cache_key] = cov.det ** (-1/2) \
-				* np.exp(-(1/2) * mean_dev @ cov.inv @ mean_dev.transpose())
+
+	def calculate_multivariate_normal_logpdf(self, x, mean, cov):
+		logpdf = (-x.shape[0]/2) * np.log(np.pi)
+		logpdf += (-1/2) * np.log(cov.det)
+
+		x_dev = x - mean
+		logpdf += (-1/2) * (x_dev @ cov.inv @ x_dev.transpose())
+		return logpdf
+
+
+	def calculate_topic_nav_logprob(self, topic_id, nav_id):
+		cache_key = ("topic_nav_logprob", topic_id, nav_id)
+		if cache_key not in self.cache:
+			# nav = self.training_data.nav_embeddings[nav_id]
+			# cov = self.nav_topic_covariances[-1][topic_id]
+			# mean_dev = nav - self.nav_topic_means[-1][topic_id]
+
+			# self.cache[cache_key] = cov.det ** (-1/2) \
+				# * np.exp(-(1/2) * mean_dev @ cov.inv @ mean_dev.transpose())
+			self.cache[cache_key] = self.calculate_multivariate_normal_logpdf(
+				self.training_data.nav_embeddings[nav_id], 
+				self.nav_topic_means[-1][topic_id], 
+				self.nav_topic_covariances[-1][topic_id]
+			)
 
 		return self.cache[cache_key]
 
 
-	# log sum exp?
 	def sample_nav_article_nav_assignments(self, article_id):
-		nav_article_proportions = self.nav_article_proportions[-1][article_id]
-		unnormalized = np.array([
-			[nav_article_proportions[topic_id] * self.get_unnormalized_topic_nav_probability(
-				topic_id, nav_id) for topic_id in range(self.num_nav_topics)] \
-			for nav_id in self.training_data.article_navs[article_id]
-		])
-		normalized = unnormalized / unnormalized.sum(axis = 1, keepdims=True)
-		return [choice(self.num_nav_topics, p=p) for p in normalized]
+		nav_article_log_proportions = np.log(
+			self.nav_article_proportions[-1][article_id])
+
+		updated_assignments = []
+		for nav_id in self.training_data.article_navs[article_id]:
+			assignment_proportions = nav_article_log_proportions + np.array([
+				self.calculate_topic_nav_logprob(topic_id, nav_id) \
+				for topic_id in range(self.num_nav_topics)
+			])
+			assignment_probabilities = np.exp(
+				assignment_proportions - self.logsumexp(assignment_proportions))
+			updated_assignments.append(choice(self.num_nav_topics, p=assignment_probabilities))
+
+		return updated_assignments
+
+	# def get_unnormalized_topic_nav_probability(self, topic_id, nav_id):
+	# 	cache_key = ("unnorm_topic_nav_prob", topic_id, nav_id)
+	# 	if cache_key not in self.cache:
+	# 		nav = self.training_data.nav_embeddings[nav_id]
+	# 		cov = self.nav_topic_covariances[-1][topic_id]
+	# 		mean_dev = nav - self.nav_topic_means[-1][topic_id]
+
+	# 		self.cache[cache_key] = cov.det ** (-1/2) \
+	# 			* np.exp(-(1/2) * mean_dev @ cov.inv @ mean_dev.transpose())
+
+	# 	return self.cache[cache_key]
+
+
+	# # log sum exp?
+	# def sample_nav_article_nav_assignments(self, article_id):
+	# 	nav_article_proportions = self.nav_article_proportions[-1][article_id]
+	# 	unnormalized = np.array([
+	# 		[nav_article_proportions[topic_id] * self.get_unnormalized_topic_nav_probability(
+	# 			topic_id, nav_id) for topic_id in range(self.num_nav_topics)] \
+	# 		for nav_id in self.training_data.article_navs[article_id]
+	# 	])
+	# 	normalized = unnormalized / unnormalized.sum(axis = 1, keepdims=True)
+	# 	return [choice(self.num_nav_topics, p=p) for p in normalized]
 
 
 	def calculate_intermediate_values(self):
@@ -164,14 +215,12 @@ class Sampler:
 				self.nav_topic_stats[nav_topic_assignment][2] += nav
 				self.nav_article_topic_counts[article_id][nav_topic_assignment] += 1
 
-	# a speedier implementation that assumes we already have our inverse and determinant
-	def calculate_multivariate_normal_logpdf(self, x, mean, cov):
-		global PI_LOG
+		for topic_id in range(self.num_nav_topics):
+			if self.nav_topic_stats[topic_id][1] == 0:
+				print("empty topic: %s" % topic_id)
+				# print(self.cache["test"])
+				# raise Exception("WAH")
 
-		logpdf = (-x.shape[0]/2) * np.log(np.pi)
-		logpdf += (-1/2) * np.log(cov.det)
-		logpdf += (-1/2) * (x - mean) @ cov.inv @ (x - mean)
-		return logpdf
 
 	def calculate_log_joint(self):
 		log_joint = 0
@@ -196,13 +245,14 @@ class Sampler:
 			for article_nav_id, nav_id in enumerate(self.training_data.article_navs[article_id]):
 				nav_topic_assignment = self.nav_article_nav_assignments[-1][article_id][article_nav_id]
 				log_joint += np.log(self.nav_article_proportions[-1][article_id][nav_topic_assignment])
+				log_joint += self.calculate_topic_nav_logprob(nav_topic_assignment, nav_id)
 
 				# can we calculate this in a batch for every word assigned to a topic?
-				log_joint += self.calculate_multivariate_normal_logpdf(
-					self.training_data.nav_embeddings[nav_id],
-					self.nav_topic_means[-1][nav_topic_assignment],
-					self.nav_topic_covariances[-1][nav_topic_assignment]
-				)
+				# log_joint += self.calculate_multivariate_normal_logpdf(
+				# 	self.training_data.nav_embeddings[nav_id],
+				# 	self.nav_topic_means[-1][nav_topic_assignment],
+				# 	self.nav_topic_covariances[-1][nav_topic_assignment]
+				# )
 
 		return log_joint
 
@@ -290,6 +340,22 @@ class Sampler:
 
 			self.log_joints.append(self.calculate_log_joint())
 
+			if epoch % 10 == 0:
+				for topic_id in range(self.num_nav_topics):
+					top_nav_ids = np.argsort(-np.array([
+						self.calculate_topic_nav_logprob(topic_id, nav_id) \
+						for nav_id in range(len(self.training_data.nav_vocab))
+					]))[:5]
+					top_article_ids = np.argsort(
+						-np.stack(updated_nav_article_proportions)[:, topic_id])[:5]
+					print("topic %s: %s; %s" % (
+							topic_id, 
+							",".join([
+								self.training_data.nav_vocab[nav_id][1] for nav_id in top_nav_ids]), 
+							",".join(map(str, top_article_ids))
+						)
+					)
+
 			print("%s: END OF EPOCH %s, log_joint=%s" % (datetime.now(), epoch, self.log_joints[-1]))
 
 
@@ -300,12 +366,12 @@ if __name__ == '__main__':
 	training_data = TrainingData(
 		articles, nav_vocab, nav_embeddings, article_navs, ne_vocab, article_nes)
 
-	num_nav_topics = 7
+	num_nav_topics = 10
 	sampler = Sampler("naive", training_data, num_nav_topics=num_nav_topics, 
 		nav_topic_mean_prior_mean=np.mean(nav_embeddings, axis=0),
-		nav_topic_mean_prior_covariance=np.eye(nav_embeddings.shape[1], dtype=np.float64),
+		nav_topic_mean_prior_covariance=np.cov(nav_embeddings, rowvar=False),
 		nav_topic_covariance_prior_dof=nav_embeddings.shape[1],
 		nav_topic_covariance_prior_scale=3 * nav_embeddings.shape[1] * np.eye(nav_embeddings.shape[1], dtype=np.float64),
 		nav_article_topic_proportions_prior_alpha=np.ones(num_nav_topics)
 	)
-	sampler.run(10)
+	sampler.run(100)

@@ -131,9 +131,9 @@ p(\mu_k | \mu_{-k}, \bm{\Sigma}, \bm{\theta}, \bm{\zeta}, \bm{w}) & \propto p(\m
 & \propto \exp{-\frac{1}{2}(\mu_k - m_k)^T S_k^{-1} (\mu_k - m_k)} \prod_{w \in W_k} \exp{-\frac{1}{2}(w - \mu_k)^T \Sigma_k^{-1} (w - \mu_k)} \\
 & \propto \exp{-\frac{1}{2}(\mu_k - m_k)^T S_k^{-1} (\mu_k - m_k)} \exp{\sum_{w \in W_k} -\frac{1}{2}(w - \mu_k)^T \Sigma_k^{-1} (w - \mu_k)} \\
 & \propto \exp{-\frac{1}{2}((\mu_k - m_k)^T S_k^{-1} (\mu_k - m_k) + \sum_{w \in W_k} (w - \mu_k)^T \Sigma_k^{-1} (w - \mu_k))} \\
-& \propto \exp{-\frac{1}{2}((\mu_k - m_k)^T S_k^{-1} (\mu_k - m_k) + \sum_{w \in W_k}(\yhighlight{w^T\Sigma_k^{-1}w} - 2 \mu_k^T\Sigma_k^{-1}w + \mu_k^T\Sigma^{-1}\mu_k))} \\
-& \propto \exp{-\frac{1}{2}((\mu_k - m_k)^T S_k^{-1} (\mu_k - m_k) - 2 \mu_k^T\Sigma_k^{-1}n_{W_k}\bar{w}_k + n_{W_k}\mu_k^T\Sigma^{-1}\mu_k)} \\
-& \propto \exp{-\frac{1}{2}(\mu_k^T(\ghighlight{S_k^{-1} + n_{W_k}\Sigma^{-1}})\mu_k - 2\mu_k^T(S_k^{-1}m_k + \Sigma_k^{-1}n_{W_k}\bar{w}_k) + \yhighlight{m_k^TS_k^{-1}m_k})} \\
+& \propto \exp{-\frac{1}{2}((\mu_k - m_k)^T S_k^{-1} (\mu_k - m_k) + \sum_{w \in W_k}(\yhighlight{w^T\Sigma_k^{-1}w} - 2 \mu_k^T\Sigma_k^{-1}w + \mu_k^T\Sigma_k^{-1}\mu_k))} \\
+& \propto \exp{-\frac{1}{2}((\mu_k - m_k)^T S_k^{-1} (\mu_k - m_k) - 2 \mu_k^T\Sigma_k^{-1}n_{W_k}\bar{w}_k + n_{W_k}\mu_k^T\Sigma_k^{-1}\mu_k)} \\
+& \propto \exp{-\frac{1}{2}(\mu_k^T(\ghighlight{S_k^{-1} + n_{W_k}\Sigma_k^{-1}})\mu_k - 2\mu_k^T(S_k^{-1}m_k + \Sigma_k^{-1}n_{W_k}\bar{w}_k) + \yhighlight{m_k^TS_k^{-1}m_k})} \\
 & \propto \exp{-\frac{1}{2}(\mu_k^T\hat{S}_k^{-1}\mu_k - 2\mu_k^T\hat{S}_k^{-1}\ghighlight{\hat{S}_k(S_k^{-1}m_k + \Sigma_k^{-1}n_{W_k}\bar{w}_k)})} \\
 & \propto \exp{-\frac{1}{2}(\mu_k^T\hat{S}_k^{-1}\mu_k - 2\mu_k^T\hat{S}_k^{-1}\hat{m}_k + \yhighlight{\hat{m}_k^T\hat{S}_k^{-1}\hat{m}_k})} \\
 & = \mathcal{N}(\hat{m}_k, \hat{S}_k), \hat{m}_k = \hat{S}_k(S_k^{-1}m_k + \Sigma_k^{-1}n_{W_k}\bar{w}_k), \hat{S}_k^{-1} = S_k^{-1} + n_{W_k}\Sigma_k^{-1}

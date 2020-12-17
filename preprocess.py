@@ -69,6 +69,7 @@ EMBEDDINGS = {
 
 NUM_WORKERS = 8
 
+
 class Article:
 	def __init__(self, lang, filepath, date, topics, nouns_and_verbs, named_entities):
 		self.lang = lang
@@ -83,6 +84,19 @@ class Article:
 			self.lang, self.filepath, self.date, 
 			self.topics, self.nouns_and_verbs, self.named_entities
 		)
+
+
+class TrainingData:
+	def __init__(self, articles, nav_vocab, nav_embeddings, article_navs, ne_vocab, article_nes):
+		self.articles = articles 
+		self.nav_vocab = nav_vocab
+		self.nav_embeddings = nav_embeddings
+		self.article_navs = article_navs
+		self.ne_vocab = ne_vocab
+		self.article_nes = article_nes
+
+	def get_nav_embedding(self, article_id, article_nav_id):
+		return self.nav_embeddings[self.article_navs[article_id][article_nav_id]]
 
 
 def xdict(maybe_dict):
@@ -460,12 +474,15 @@ def preprocess_articles(langs, date_start=None, date_end=None, pca_dim=300):
 		with open(article_named_entities_path, 'rb') as f:
 			article_named_entities = pickle.load(f)
 
-	return articles, \
-		noun_and_verb_vocabulary, \
-		noun_and_verb_embeddings, \
-		article_nouns_and_verbs, \
-		named_entity_vocabulary, \
+	return TrainingData(
+		articles,
+		noun_and_verb_vocabulary,
+		noun_and_verb_embeddings,
+		article_nouns_and_verbs,
+		named_entity_vocabulary,
 		article_named_entities
+	)
+
 
 if __name__ == '__main__':
 	preprocess_articles(['en', 'es', 'ru'], datetime(1996, 9, 1), datetime(1996, 12, 1))

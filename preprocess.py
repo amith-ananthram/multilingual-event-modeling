@@ -427,7 +427,7 @@ def preprocess_articles(langs, date_start=None, date_end=None, pca_dim=300):
 
 		named_entity_vocabulary = SortedSet()
 		for named_entity, count in grouped_named_entity_counts.items():
-			if count > 5 and count < 0.8 * len(articles):
+			if count > 5 and count < 0.8 * len(articles) and 'reuters' not in named_entity:
 				named_entity_vocabulary.add(named_entity)
 
 		print("Grouped named entities: %s" % len(named_entity_vocabulary))

@@ -2,7 +2,7 @@ import argparse
 import numpy as np
 from datetime import datetime
 
-from samplers import NaiveSampler
+from samplers import NaiveSampler, CollapsedSampler
 from preprocess import Article, preprocess_articles
 
 # figure out different priors
@@ -35,11 +35,21 @@ if __name__ == '__main__':
 
 	num_nav_topics = 10
 	num_ne_topics = 50
-	sampler = NaiveSampler(1, training_data, num_nav_topics=num_nav_topics, 
-		nav_topic_mean_prior_mean=np.mean(training_data.nav_embeddings, axis=0),
-		nav_topic_mean_prior_covariance=(1/num_nav_topics)*np.cov(training_data.nav_embeddings, rowvar=False),
-		nav_topic_covariance_prior_dof=training_data.nav_embeddings.shape[1],
-		nav_topic_covariance_prior_scale=training_data.nav_embeddings.shape[1] * np.eye(training_data.nav_embeddings.shape[1], dtype=np.float64),
+	# sampler = NaiveSampler(1, training_data, num_nav_topics=num_nav_topics, 
+	# 	nav_topic_mean_prior_mean=np.zeros(training_data.nav_embeddings.shape[1]),#np.mean(training_data.nav_embeddings, axis=0),
+	# 	nav_topic_mean_prior_covariance=np.cov(training_data.nav_embeddings, rowvar=False),
+	# 	nav_topic_covariance_prior_dof=training_data.nav_embeddings.shape[1] + 1,
+	# 	nav_topic_covariance_prior_scale=3 * training_data.nav_embeddings.shape[1] * np.eye(training_data.nav_embeddings.shape[1], dtype=np.float64),
+	# 	nav_article_topic_proportions_prior_alpha=np.ones(num_nav_topics),
+	# 	num_ne_topics=num_ne_topics,
+	# 	ne_topic_vocab_prior_alpha=np.ones(len(training_data.ne_vocab)),
+	# 	ne_article_topic_proportions_prior_alpha=np.ones(num_ne_topics)
+	# )
+	sampler = CollapsedSampler(training_data, num_nav_topics=num_nav_topics, 
+		nav_topic_mean_prior_mean=np.zeros(training_data.nav_embeddings.shape[1]),
+		nav_topic_mean_prior_covariance_kappa=1,
+		nav_topic_covariance_prior_dof=training_data.nav_embeddings.shape[1] + 1,
+		nav_topic_covariance_prior_scale=3 * training_data.nav_embeddings.shape[1] * np.eye(training_data.nav_embeddings.shape[1], dtype=np.float64),
 		nav_article_topic_proportions_prior_alpha=np.ones(num_nav_topics),
 		num_ne_topics=num_ne_topics,
 		ne_topic_vocab_prior_alpha=np.ones(len(training_data.ne_vocab)),

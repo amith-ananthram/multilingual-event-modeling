@@ -4,6 +4,7 @@ import unittest
 import numpy as np
 from scipy import stats
 
+import utils
 from preprocess import TrainingData
 from samplers.naive_sampler import NaiveSampler
 
@@ -129,6 +130,7 @@ class NaiveSamplerTest(unittest.TestCase):
 			sampler.nav_article_topic_counts
 		)
 
+	# look for other derivation of mean and cov math ugh
 
 	@mock.patch('samplers.naive_sampler.multivariate_normal')
 	@mock.patch('samplers.naive_sampler.invwishart')
@@ -155,3 +157,73 @@ class NaiveSamplerTest(unittest.TestCase):
 		)
 
 		np.testing.assert_array_equal(expected_article_proportions[0], actual_article_proportions)
+
+
+	@mock.patch('samplers.naive_sampler.choice')
+	def test_sample_nav_article_nav_assignments(self, mock_choice):
+		sampler = self.get_default_sampler_with_dummy_data(4)
+		sampler.nav_article_proportions = [
+			[],									# prior sample, unused
+			[
+				None,
+				None,	
+				None,
+				np.array([1, 2, 3, 4]),			# navs = 0, 4
+				None
+			]
+		]
+		sampler.nav_topic_covariances = [
+			[],									# prior sample, unused
+			[
+				utils.CovarianceMatrix(2*np.eye(10)),
+				utils.CovarianceMatrix(3*np.eye(10)),
+				utils.CovarianceMatrix(4*np.eye(10)),
+				utils.CovarianceMatrix(5*np.eye(10))
+			]
+		]
+		sampler.nav_topic_means = [
+			[],									# prior sample, unused
+			[
+				np.full(10, fill_value=1.1),
+				np.full(10, fill_value=2.1),
+				np.full(10, fill_value=3.1),
+				np.full(10, fill_value=4.1)
+			]
+		]
+
+		expected_proportions = np.array([
+			[
+				1 * stats.multivariate_normal.pdf(
+					np.full(10, fill_value=1), sampler.nav_topic_means[-1][0], sampler.nav_topic_covariances[-1][0].matrix),
+				2 * stats.multivariate_normal.pdf(
+					np.full(10, fill_value=1), sampler.nav_topic_means[-1][1], sampler.nav_topic_covariances[-1][1].matrix),
+				3 * stats.multivariate_normal.pdf(
+					np.full(10, fill_value=1), sampler.nav_topic_means[-1][2], sampler.nav_topic_covariances[-1][2].matrix),
+				4 * stats.multivariate_normal.pdf(
+					np.full(10, fill_value=1), sampler.nav_topic_means[-1][3], sampler.nav_topic_covariances[-1][3].matrix)
+			],
+			[
+				1 * stats.multivariate_normal.pdf(
+					np.full(10, fill_value=5), sampler.nav_topic_means[-1][0], sampler.nav_topic_covariances[-1][0].matrix),
+				2 * stats.multivariate_normal.pdf(
+					np.full(10, fill_value=5), sampler.nav_topic_means[-1][1], sampler.nav_topic_covariances[-1][1].matrix),
+				3 * stats.multivariate_normal.pdf(
+					np.full(10, fill_value=5), sampler.nav_topic_means[-1][2], sampler.nav_topic_covariances[-1][2].matrix),
+				4 * stats.multivariate_normal.pdf(
+					np.full(10, fill_value=5), sampler.nav_topic_means[-1][3], sampler.nav_topic_covariances[-1][3].matrix)
+			]
+		])
+		expected_probability1 = expected_proportions[0] / expected_proportions[0].sum()
+		expected_probability2 = expected_proportions[1] / expected_proportions[1].sum()
+
+		mock_choice.side_effect = [1, 3]
+		updated_assignments = sampler.sample_nav_article_nav_assignments(3)
+
+		self.assertEqual([1, 3], updated_assignments)
+
+		self.assertEqual(2, len(mock_choice.call_args_list))
+		np.testing.assert_array_almost_equal(expected_probability1, mock_choice.call_args_list[0][1]['p'])
+		np.testing.assert_array_almost_equal(expected_probability2, mock_choice.call_args_list[1][1]['p'])
+
+
+

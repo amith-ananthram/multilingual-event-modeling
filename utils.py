@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.cluster import KMeans
+from scipy.special import gammaln
 
 _2PI_LOG = np.log(2*np.pi)
 
@@ -34,3 +35,23 @@ def calculate_multivariate_normal_logpdf(x, mean, cov):
 		x_dev = x - mean
 		logpdf += (-1/2) * (x_dev.transpose() @ cov.inv @ x_dev)
 		return logpdf
+
+
+def calculate_multivariate_t_logpdf(x, mean, shape, df):
+	dim = mean.size
+
+	vals, vecs = np.linalg.eigh(shape)
+	logdet     = np.log(vals).sum()
+	valsinv    = np.array([1./v for v in vals])
+	U          = vecs * np.sqrt(valsinv)
+	dev        = x - mean
+	maha       = np.square(np.dot(dev, U)).sum(axis=-1)
+
+	t = 0.5 * (df + dim)
+	A = gammaln(t)
+	B = gammaln(0.5 * df)
+	C = dim/2. * np.log(df * np.pi)
+	D = 0.5 * logdet
+	E = -t * np.log(1 + (1./df) * maha)
+
+	return A - B - C - D + E

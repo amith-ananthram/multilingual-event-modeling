@@ -84,7 +84,7 @@ if __name__ == '__main__':
 			ne_article_topic_proportions_prior_alpha=ne_article_proportions_prior_alpha
 		)
 	elif args.sampler == 'c':
-		sampler = NaiveSampler(
+		sampler = CollapsedSampler(
 			modes, training_data, num_nav_topics=num_nav_topics, 
 			nav_topic_mean_prior_means=nav_topic_mean_prior_means,
 			nav_topic_mean_prior_kappa=nav_topic_mean_prior_kappa,

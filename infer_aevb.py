@@ -1,3 +1,5 @@
+import argparse
+
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -83,6 +85,7 @@ class NeTopicDecoder(nn.Module):
 		super().__init__()
 		self.dropout = nn.Dropout(dropout)
 
+		# 
 		self.topics = nn.Linear(num_topics, vocab_size)
 		self.bn_topics = nn.BatchNorm1d(vocab_size)
 
@@ -144,8 +147,22 @@ class NavEmbeddingLDA(nn.Module):
 		return self.topic_recognition_net.topics_mu.weight.cpu().detach().transpose(1, 0)
 
 if __name__ == '__main__':
-	articles, nav_vocabulary, nav_embeddings, article_nav_bows = \
-		preprocess.preprocess_articles(['en', 'es', 'ru'], datetime(1996, 9, 1), datetime(1996, 9, 2))
+	parser = argparse.ArgumentParser(description='Estimate posterior via Gibbs sampling.')
+	parser.add_argument('--modes', dest='modes', help='nouns and verbs (nav), named entities (ne)', default='nav')
+	parser.add_argument('--data-start-date', dest='data_start_date', help='YYYYMMDD')
+	parser.add_argument('--data-end-date', dest='data_end_date', help='YYYYMMDD')
+	parser.add_argument('--data-disallow-repeats', dest='data_allow_repeats', action='store_true', default=False)
+	parser.add_argument('--num-nav-topics', dest='num_nav_topics', default=10)
+	parser.add_argument('--nav-article-proportions-prior-alpha', dest='nav_article_proportions_prior_alpha', default=1)
+	parser.add_argument('--num-ne-topics', dest='num_ne_topics', default=10)
+	parser.add_argument('--ne-topic-prior-alpha', dest='ne_topic_prior_alpha', default=1)
+	parser.add_argument('--num-epochs', dest='num_epochs', default=50)
+	args = parser.parse_args()
+
+	data_start_date = datetime.strptime(args.data_start_date, '%Y%m%d')
+	data_end_date = datetime.strptime(args.data_end_date, '%Y%m%d')
+	training_data = preprocess_articles(
+		['en', 'es', 'ru'], data_start_date, data_end_date, disallow_repeats=args.data_disallow_repeats)
 
 	print("Loaded %s articles" % len(articles))
 

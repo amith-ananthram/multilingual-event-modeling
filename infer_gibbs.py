@@ -14,7 +14,7 @@ if __name__ == '__main__':
 	parser.add_argument('--num-threads', dest='num_threads', help='Parallelization for naive sampler', default=2)
 	parser.add_argument('--data-start-date', dest='data_start_date', help='YYYYMMDD')
 	parser.add_argument('--data-end-date', dest='data_end_date', help='YYYYMMDD')
-	parser.add_argument('--data-disallow-repeats', dest='data_allow_repeats', action='store_true', default=False)
+	parser.add_argument('--data-disallow-repeats', dest='data_disallow_repeats', action='store_true', default=False)
 	parser.add_argument('--num-nav-topics', dest='num_nav_topics', default=10)
 	parser.add_argument('--nav-topic-prior-mean', dest='nav_topic_prior_mean', help='[z]ero, [em]bedding mean, [k]-means')
 	parser.add_argument('--nav-topic-prior-kappa', dest='nav_topic_prior_kappa', default=1)

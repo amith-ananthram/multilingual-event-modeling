@@ -134,7 +134,7 @@ class NavEmbeddingLDA(nn.Module):
 						dist.MultivariateNormal(
 							topics_mu[batch_article_id], 
 							scale_tril=torch.diag(topics_sigma[batch_article_id])
-						).to_event(0),
+						),
 						obs=nav_embeddings[article_nav_id]	
 					)
 
@@ -162,9 +162,6 @@ if __name__ == '__main__':
 	data_end_date = datetime.strptime(args.data_end_date, '%Y%m%d')
 	training_data = preprocess_articles(
 		['en', 'es', 'ru'], data_start_date, data_end_date, disallow_repeats=args.data_disallow_repeats)
-
-	training_data.articles = training_data.articles[0:100]
-	training_data.article_navs = training_data.article_navs[0:100]
 
 	article_nav_bows = np.zeros(
 		(len(training_data.articles), len(training_data.nav_vocab)), dtype=np.float32)
@@ -197,7 +194,7 @@ if __name__ == '__main__':
 			article_ids = np.array((range(article_nav_bows.shape[0])))
 			np.random.shuffle(article_ids)
 
-			epoch_loss = 0.0
+			epoch_elbo = 0.0
 			for batch_id in range(num_batches):
 				batch_article_ids = article_ids[
 					list(range(batch_id * batch_size, (batch_id + 1) * batch_size))]

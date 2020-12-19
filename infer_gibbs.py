@@ -18,7 +18,7 @@ if __name__ == '__main__':
 	parser.add_argument('--num-nav-topics', dest='num_nav_topics', default=10)
 	parser.add_argument('--nav-topic-prior-mean', dest='nav_topic_prior_mean', help='[z]ero, [em]bedding mean, [k]-means')
 	parser.add_argument('--nav-topic-prior-kappa', dest='nav_topic_prior_kappa', default=1)
-	parser.add_argument('--nav-topic-prior-dof-shift', dest='nav_topic_prior_dof_shift', default=1)
+	parser.add_argument('--nav-topic-prior-dof-shift', dest='nav_topic_prior_dof_shift', default=2)
 	parser.add_argument('--nav-topic-prior-scale-factor', dest='nav_topic_prior_scale_factor', default=3)
 	parser.add_argument('--nav-article-proportions-prior-alpha', dest='nav_article_proportions_prior_alpha', default=1)
 	parser.add_argument('--nav-initialization', dest='nav_initialization', help='[r]andom, [k]-means')
@@ -55,7 +55,7 @@ if __name__ == '__main__':
 	nav_topic_mean_prior_kappa = float(args.nav_topic_prior_kappa)
 	nav_topic_covariance_prior_dof = training_data.nav_embeddings.shape[1] + int(args.nav_topic_prior_dof_shift)
 	nav_topic_covariance_prior_scale = int(args.nav_topic_prior_scale_factor) \
-		* training_data.nav_embeddings.shape[1] * np.eye(training_data.nav_embeddings.shape[1], dtype=np.float64)
+		* np.eye(training_data.nav_embeddings.shape[1], dtype=np.float64)
 
 	nav_article_topic_proportions_prior_alpha = np.full(
 		num_nav_topics, fill_value=float(args.nav_article_proportions_prior_alpha))

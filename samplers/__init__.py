@@ -1,2 +1,3 @@
 from .naive_sampler import NaiveSampler
-from .collapsed_sampler import CollapsedSampler
+from .collapsed_sampler import CollapsedSampler 
+from .collapsed_cholesky_sampler import CollapsedCholeskySampler

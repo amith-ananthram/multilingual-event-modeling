@@ -285,7 +285,7 @@ def translate_named_entities(lang, named_entities):
 	return translated
 
 
-def preprocess_articles(langs, date_start=None, date_end=None, pca_dim=300):
+def preprocess_articles(langs, date_start=None, date_end=None, pca_dim=300, disallow_repeats=False):
 	global DONE_PROCESSING
 
 	extracted_path = os.path.join(REUTERS_DIRECTORY, 'preprocessed/%s--%s.pkl' % (
@@ -473,6 +473,11 @@ def preprocess_articles(langs, date_start=None, date_end=None, pca_dim=300):
 
 		with open(article_named_entities_path, 'rb') as f:
 			article_named_entities = pickle.load(f)
+
+	if disallow_repeats:
+		for article_id in range(len(articles)):
+			article_nouns_and_verbs[article_id] = list(set(article_nouns_and_verbs[article_id]))
+			article_named_entities[article_id] = list(set(article_named_entities[article_id]))
 
 	return TrainingData(
 		articles,

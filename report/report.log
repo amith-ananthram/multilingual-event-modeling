@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  16 DEC 2020 20:02
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  17 DEC 2020 22:32
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -881,24 +881,24 @@ Package microtype Info: Character `textquestiondown ' is missing
 (microtype)             in font `T1/ntxsups/m/n/10'.
 (microtype)             Ignoring protrusion settings for this character.
 
-Overfull \hbox (22.2013pt too wide) detected at line 140
+Overfull \hbox (22.2013pt too wide) detected at line 141
 []
  []
 
 [4]
-Overfull \hbox (25.60901pt too wide) detected at line 153
+Overfull \hbox (25.60901pt too wide) detected at line 154
 []
  []
 
-[5] [6]
+[5] [6] [7]
 
 Package natbib Warning: There were undefined citations.
 
-[7] (./report.aux) ) 
+[8] (./report.aux) ) 
 Here is how much of TeX's memory you used:
  11575 strings out of 480608
  169693 string characters out of 5903631
- 476797 words of memory out of 5000000
+ 477797 words of memory out of 5000000
  27094 multiletter control sequences out of 15000+600000
  590408 words of font info for 182 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -918,10 +918,10 @@ s/type1/public/newtx/ztmb.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/p
 ublic/newtx/ztmr.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/new
 tx/ztmri.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/boondox/zxx
 rw8a.pfb>
-Output written on report.pdf (7 pages, 204165 bytes).
+Output written on report.pdf (8 pages, 206188 bytes).
 PDF statistics:
- 81 PDF objects out of 1000 (max. 8388607)
- 59 compressed objects within 1 object stream
+ 84 PDF objects out of 1000 (max. 8388607)
+ 61 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  36865 words of extra memory for PDF output out of 42996 (max. 10000000)
 

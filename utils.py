@@ -5,16 +5,22 @@ from scipy.special import gammaln
 _2PI_LOG = np.log(2*np.pi)
 
 class CovarianceMatrix:
-	def __init__(self, matrix):
+	def __init__(self, matrix, det=None, inv=None):
 		# if we happen to generate a singular covariance 
 		# matrix, we increase its diagonal entries by enough 
 		# to raise its lowest eigenvalue to 1
-		if np.linalg.det(matrix) == 0:
+		if np.linalg.det(matrix) < 1:
 			eigs, _ = np.linalg.eigh(matrix)
 			matrix += (1 - eigs[0]) * np.eye(matrix.shape[0])
 		self.matrix = matrix
-		self.det = np.linalg.det(matrix)
-		self.inv = np.linalg.inv(matrix)
+		self.det = np.linalg.det(matrix) if det is None else det
+		self.inv = np.linalg.inv(matrix) if inv is None else inv
+
+	def scaled(cov_matrix, scaling_factor):
+		matrix = scaling_factor * cov_matrix.matrix
+		det = (scaling_factor ** cov_matrix.matrix.shape[0]) * cov_matrix.det
+		inv = (1 / scaling_factor) * cov_matrix.inv
+		return CovarianceMatrix(matrix, det, inv)
 
 
 def get_kmeans_assignments(embeddings, num_means):
@@ -24,8 +30,8 @@ def get_kmeans_assignments(embeddings, num_means):
 
 
 def logsumexp(x):
-	c = x.max()
-	return c + np.log(np.sum(np.exp(x - c)))
+	max_x = x.max()
+	return max_x + np.log(np.sum(np.exp(x - max_x)))
 
 
 def calculate_multivariate_normal_logpdf(x, mean, cov):
@@ -54,4 +60,6 @@ def calculate_multivariate_t_logpdf(x, mean, shape, df):
 	D = 0.5 * logdet
 	E = -t * np.log(1 + (1./df) * maha)
 
-	return A - B - C - D + E
+	logpdf = A - B - C - D + E
+	
+	return logpdf

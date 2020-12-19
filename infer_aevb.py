@@ -52,7 +52,7 @@ class ProportionEncoder(nn.Module):
 
 # produce generative samples from our joint distribution conditional
 # on the sample oof latent variables from our approximate posterior distribution
-class TopicDecoder(nn.Module):
+class NavTopicDecoder(nn.Module):
 	def __init__(self, dropout, num_topics, embedding_dim):
 		super().__init__()
 		self.dropout = nn.Dropout(dropout)
@@ -67,6 +67,24 @@ class TopicDecoder(nn.Module):
 		# to calculate the likelihood of a given embedding
 		self.topics_sigma = nn.Linear(num_topics, embedding_dim)
 		self.bn_topics_sigma = nn.BatchNorm1d(embedding_dim)
+
+	# proportions: batch_size x num_topics
+	def forward(self, proportions):
+		topics_mu = self.bn_topics_mu(self.topics_mu(proportions))
+		topics_sigma = (0.5 * self.bn_topics_sigma(self.topics_sigma(proportions))).exp()
+
+		return topics_mu, topics_sigma
+
+
+# produce generative samples from our joint distribution conditional
+# on the sample oof latent variables from our approximate posterior distribution
+class NeTopicDecoder(nn.Module):
+	def __init__(self, dropout, num_topics, vocab_size):
+		super().__init__()
+		self.dropout = nn.Dropout(dropout)
+
+		self.topics = nn.Linear(num_topics, vocab_size)
+		self.bn_topics = nn.BatchNorm1d(vocab_size)
 
 	# proportions: batch_size x num_topics
 	def forward(self, proportions):

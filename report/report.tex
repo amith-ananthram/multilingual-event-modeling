@@ -118,6 +118,7 @@ While I implemented my Gibbs sampler from scratch in Python, I relied on many of
 
 [TODO once I have results]
 
+
 \textbf{8 Appendix}
 
 \textbf{Derivation of complete conditionals for $\mu_k$ and $\Sigma_k$}
@@ -139,7 +140,7 @@ p(\mu_k | \mu_{-k}, \bm{\Sigma}, \bm{\theta}, \bm{\zeta}, \bm{w}) & \propto p(\m
 & = \mathcal{N}(\hat{m}_k, \hat{S}_k), \hat{m}_k = \hat{S}_k(S_k^{-1}m_k + \Sigma_k^{-1}n_{W_k}\bar{w}_k), \hat{S}_k^{-1} = S_k^{-1} + n_{W_k}\Sigma_k^{-1}
 \end{align*}
 
-Note that, as our conjugate prior is the normal inverse-Wishart distribution, $S_k = \frac{1}{\lambda}\Sigma_k$.
+Note that, when our conjugate prior is the normal inverse-Wishart distribution with mean covariance scaling factor $\lambda$, $S_k = \frac{1}{\lambda}\Sigma_k$.
 
 \begin{align*}
 p(\Sigma_k | \bm{\mu}, \Sigma_{-k}, \bm{\theta}, \bm{\zeta}, \bm{w}) & \propto p(\Sigma_k) \prod_{w \in W_k} p(w | \mu_k, \Sigma_k) \\
@@ -167,14 +168,23 @@ We can simplify these integrals separately, dropping terms that are constant wit
 
 \begin{align*}
 & \int p(\bm{\mu})p(\bm{\Sigma})p(\bm{w} | \bm{\zeta}, \bm{\mu}, \bm{\Sigma})\,d\Sigma \,d\mu \\
-& = \int \prod^{K}_{k} p(\mu_k; m, (1/\lambda)\Sigma_k)p(\Sigma_k; \nu, \Psi) \prod^{N}_i \prod^{M_i}_j p(w_{ij} | \zeta_{ij}, \mu_{\zeta_{ij}}, \Sigma_{\zeta_{ij}}) \,d\Sigma \,d\mu \\
-& = \prod^{K}_{k} \int p(\mu_k; m, (1/\lambda)\Sigma_k)p(\Sigma_k; \nu, \Psi) \prod^{N}_i \prod^{M_i}_j p(w_{ij} | \zeta_{ij}, \mu_{\zeta_{ij}}, \Sigma_{\zeta_{ij}}) \,d\Sigma_k \,d\mu_k \\
-& = \prod^{K}_{k} \int (2\pi)^{-d/2} |(1/\lambda)\Sigma_k|^{-1/2} \exp{((-1/2)(\mu_k - m_k)^T((1/\lambda)\Sigma_k)^{-1}(\mu_k - m_k))} \\
-& \times \frac{|\Psi_k|^{\nu/2}}{2^{\nu d/2}\Gamma_d(\nu/2)} |\Sigma_k|^{-(\nu + d + 1)/2} \exp{((-1/2) \Tr{\Psi \Sigma_k^{-1}})} \\
+& = \int \prod^{K}_{k} p(\mu_k; \vec{0}, (1/\lambda)\Sigma_k)p(\Sigma_k; \nu, \Psi) \prod^{N}_i \prod^{M_i}_j p(w_{ij} | \zeta_{ij}, \mu_{\zeta_{ij}}, \Sigma_{\zeta_{ij}}) \,d\Sigma \,d\mu \\
+& = \prod^{K}_{k} \int p(\mu_k; \vec{0}, (1/\lambda)\Sigma_k)p(\Sigma_k; \nu, \Psi) \prod^{N}_i \prod^{M_i}_j p(w_{ij} | \zeta_{ij}, \mu_{\zeta_{ij}}, \Sigma_{\zeta_{ij}}) \,d\Sigma_k \,d\mu_k \\
+& = \prod^{K}_{k} \int (2\pi)^{-d/2} |(1/\lambda)\Sigma_k|^{-1/2} \exp{((-1/2)\mu_k^T((1/\lambda)\Sigma_k)^{-1}\mu_k)} \\
+& \times \frac{|\Psi|^{\nu/2}}{2^{\nu d/2}\Gamma_d(\nu/2)} |\Sigma_k|^{-(\nu + d + 1)/2} \exp{((-1/2) \Tr{\Psi \Sigma_k^{-1}})} \\
 & \times \prod^{N}_i \prod^{M_i}_j (2\pi)^{-d/2} |\Sigma_{\zeta_{ij}}|^{-1/2} \exp{((-1/2)(w_{ij} - \mu_{\zeta_{ij}})^T\Sigma_{{\zeta_{ij}}}^{-1}(w_{ij} - \mu_{{\zeta_{ij}}}))}  \,d\Sigma_k  \,d\mu_k \\
-& = \prod^{K}_{k} \int (2\pi)^{-d/2} |(1/\lambda)\Sigma_k|^{-1/2} \exp{((-1/2)(\mu_k - m_k)^T((1/\lambda)\Sigma_k)^{-1}(\mu_k - m_k))} \\
-& \times \frac{|\Psi_k|^{\nu/2}}{2^{\nu d/2}\Gamma_d(\nu/2)} |\Sigma_k|^{-(\nu + d + 1)/2} \exp{((-1/2) \Tr{\Psi \Sigma_k^{-1}})} \\
+& = \prod^{K}_{k} \int (2\pi)^{-d/2} |(1/\lambda)\Sigma_k|^{-1/2} \exp{((-1/2)\mu_k^T((1/\lambda)\Sigma_k)^{-1}\mu_k)} \\
+& \times \frac{|\Psi|^{\nu/2}}{2^{\nu d/2}\Gamma_d(\nu/2)} |\Sigma_k|^{-(\nu + d + 1)/2} \exp{((-1/2) \Tr{\Psi \Sigma_k^{-1}})} \\
 & \times \prod_{w \in W_k} (2\pi)^{-d/2} |\Sigma_k|^{-1/2} \exp{((-1/2)(w - \mu_{k})^T\Sigma_{k}^{-1}(w - \mu_{k}))}  \,d\Sigma_k  \,d\mu_k \\
+& = \prod^{K}_{k} \int (2\pi)^{-d/2} |(1/\lambda)\Sigma_k|^{-1/2} \exp{((-1/2)\mu_k^T((1/\lambda)\Sigma_k)^{-1}\mu_k)} \\
+& \times \frac{|\Psi|^{\nu/2}}{2^{\nu d/2}\Gamma_d(\nu/2)} |\Sigma_k|^{-(\nu + d + 1)/2} \exp{((-1/2) \Tr{\Psi \Sigma_k^{-1}})} \\
+& \times (2\pi)^{-(n_{W_k}d)/2}|\Sigma_k|^{-n_{W_k}/2}\exp{\sum_{w \in W_k} ((-1/2)(w - \mu_{k})^T\Sigma_{k}^{-1}(w - \mu_{k}))}  \,d\Sigma_k  \,d\mu_k \\
+& = \prod^{K}_{k} (2\pi)^{-(n_{W_k}d)/2}\frac{|\Psi|^{\nu/2}}{2^{\nu d/2}\Gamma_d(\nu/2)} \int (2\pi)^{-d/2} |(1/\lambda)\Sigma_k|^{-1/2} \exp{((-1/2)\mu_k^T((1/\lambda)\Sigma_k)^{-1}\mu_k)} \\
+& \times  |\Sigma_k|^{-(\nu + n_{W_k} + d + 1)/2} \exp{((-1/2) \Tr{(\Psi \Sigma_k^{-1})} + \sum_{w \in W_k} ((-1/2)(w - \mu_{k})^T\Sigma_{k}^{-1}(w - \mu_{k}))})  \,d\Sigma_k  \,d\mu_k \\
+& = \prod^{K}_{k} (2\pi)^{-(n_{W_k}d)/2}\frac{|\Psi|^{\nu/2}}{2^{\nu d/2}\Gamma_d(\nu/2)} \int (2\pi)^{-d/2} |(1/\lambda)\Sigma_k|^{-1/2} \exp{((-1/2)\mu_k^T((1/\lambda)\Sigma_k)^{-1}\mu_k)} \\
+& \times  |\Sigma_k|^{-(\nu + n_{W_k} + d + 1)/2} \exp{((-1/2) \Tr{(\Psi \Sigma_k^{-1} + \sum_{w \in W_k} ((-1/2)(w - \mu_{k})(w - \mu_{k})^T\Sigma_{k}^{-1}))}})  \,d\Sigma_k  \,d\mu_k \\
+& = \prod^{K}_{k} (2\pi)^{-(n_{W_k}d)/2}\frac{|\Psi|^{\nu/2}}{2^{\nu d/2}\Gamma_d(\nu/2)} \int (2\pi)^{-d/2} |(1/\lambda)\Sigma_k|^{-1/2} \exp{((-1/2)\mu_k^T((1/\lambda)\Sigma_k)^{-1}\mu_k)} \\
+& \times  |\Sigma_k|^{-(\nu + n_{W_k} + d + 1)/2} \exp{((-1/2) \Tr{((\Psi + \sum_{w \in W_k} ((-1/2)(w - \mu_{k})(w - \mu_{k})^T)\Sigma_{k}^{-1}))}})  \,d\Sigma_k  \,d\mu_k \\
 \end{align*}
 
 \begin{align*}

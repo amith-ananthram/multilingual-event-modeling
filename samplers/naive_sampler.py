@@ -13,13 +13,14 @@ from utils import (
 )
 
 class NaiveSampler:
-	def __init__(self, num_workers, training_data, 
-		num_nav_topics, nav_topic_mean_prior_mean, 
-		nav_topic_mean_prior_covariance, nav_topic_covariance_prior_dof,
-		nav_topic_covariance_prior_scale, nav_article_topic_proportions_prior_alpha,
+	def __init__(self, modes, num_workers, training_data, 
+		num_nav_topics, nav_topic_mean_prior_means, nav_topic_mean_prior_kappa, 
+		nav_topic_covariance_prior_dof, nav_topic_covariance_prior_scale, 
+		nav_article_topic_proportions_prior_alpha, nav_initialization,
 		num_ne_topics, ne_topic_vocab_prior_alpha, ne_article_topic_proportions_prior_alpha
 	):
 		self.cache = {}
+		self.modes = modes
 		self.num_workers = num_workers
 		self.training_data = training_data
 
@@ -28,15 +29,15 @@ class NaiveSampler:
 		##
 		self.num_nav_topics = num_nav_topics
 		# multivariate-Gaussian prior on our topic means
-		self.nav_topic_mean_prior_mean = nav_topic_mean_prior_mean
-		self.nav_topic_mean_prior_covariance = CovarianceMatrix(nav_topic_mean_prior_covariance)
-		self.nav_topic_mean_prior_covariance_inv_mean_product = \
-			self.nav_topic_mean_prior_covariance.inv @ self.nav_topic_mean_prior_mean
+		self.nav_topic_mean_prior_means = nav_topic_mean_prior_means
+		self.nav_topic_mean_prior_kappa = nav_topic_mean_prior_kappa
 		# inverse-Wishart prior on our topic covariances
 		self.nav_topic_covariance_prior_dof = nav_topic_covariance_prior_dof
 		self.nav_topic_covariance_prior_scale = nav_topic_covariance_prior_scale
 		# Dirichlet prior on our article topic proportions
 		self.nav_article_topic_proportions_prior_alpha = nav_article_topic_proportions_prior_alpha
+
+		self.nav_initialization = nav_initialization
 
 		##
 		# named entity hyperparameters
@@ -72,28 +73,11 @@ class NaiveSampler:
 	def sample_nav_topic_mean_and_covariance(self, topic_id):
 		topic_navs, topic_nav_count, topic_nav_sum = self.nav_topic_stats[topic_id]
 
-		# ##
-		# # re-sample the topic mean
-		# ##
-
-		# topic_mean_covariance_inv = \
-		# 	self.nav_topic_mean_prior_covariance.inv + topic_nav_count * self.nav_topic_covariances[-1][topic_id].inv
-		# topic_mean_covariance = np.linalg.inv(topic_mean_covariance_inv)
-		# topic_mean_mean = topic_mean_covariance @ (
-		# 	self.nav_topic_mean_prior_covariance_inv_mean_product + 
-		# 	(self.nav_topic_covariances[-1][topic_id].inv @ topic_nav_sum)
-		# )
-
-		# topic_mean = multivariate_normal.rvs(
-		# 	topic_mean_mean,
-		# 	topic_mean_covariance
-		# )
-
 		##
 		# re-sample the topic covariance
 		##
 
-		topic_covariance_dof = topic_nav_count + self.nav_topic_covariance_prior_dof
+		topic_covariance_dof = self.nav_topic_covariance_prior_dof + topic_nav_count
 
 		# the einsum below produces the sum of the outer products
 		# of the deviations of each word vector from the topic mean
@@ -107,36 +91,19 @@ class NaiveSampler:
 		topic_covariance = invwishart.rvs(
 			topic_covariance_dof, topic_covariance_scale)
 
-		kappa = 1
-		topic_mean_mean = topic_nav_sum / (kappa + topic_nav_count)
-		topic_mean_covariance = (1 / (kappa + topic_nav_count)) * topic_covariance
+		##
+		# re-sample the topic mean
+		##
+
+		topic_mean_mean = (
+			self.nav_topic_mean_prior_kappa * self.nav_topic_mean_prior_means[topic_id] + topic_nav_sum) \
+			/ (self.nav_topic_mean_prior_kappa + topic_nav_count) 
+		topic_mean_covariance = (topic_covariance / (
+			self.nav_topic_mean_prior_kappa + topic_nav_count))
 		topic_mean = multivariate_normal.rvs(
 			topic_mean_mean,
 			topic_mean_covariance
 		)
-
-		# kappa = 5
-		# topic_covariance_dof = topic_nav_count + self.nav_topic_covariance_prior_dof
-		# if len(topic_navs) > 0:
-		# 	topic_navs = np.stack(topic_navs)
-		# 	topic_nav_mean = np.mean(topic_navs, axis=0)
-		# 	topic_nav_devs = topic_navs - topic_nav_mean
-		# 	topic_covariance_scale = self.nav_topic_covariance_prior_scale + \
-		# 		np.einsum('ki,kj->ij', topic_nav_devs, topic_nav_devs) + \
-		# 		(((kappa * topic_nav_count)/(kappa + topic_nav_count)) * \
-		# 			(topic_nav_mean - self.nav_topic_mean_prior_mean) @ (topic_nav_mean - self.nav_topic_mean_prior_mean).transpose())
-		# else:
-		# 	topic_nav_mean = np.zeros(self.nav_topic_mean_prior_mean.shape[0])
-		# 	topic_covariance_scale = self.nav_topic_covariance_prior_scale
-		# topic_covariance = invwishart.rvs(
-		# 	topic_covariance_dof, topic_covariance_scale)
-		
-		# topic_mean_mean = (kappa * self.nav_topic_mean_prior_mean + topic_nav_sum)/(kappa + topic_nav_count)
-		# topic_mean_covariance = (1/(5 + topic_nav_count)) * topic_covariance
-		# topic_mean =  topic_mean = multivariate_normal.rvs(
-		# 	topic_mean_mean,
-		# 	topic_mean_covariance
-		# )
 
 		return topic_mean, CovarianceMatrix(topic_covariance)
 
@@ -182,8 +149,9 @@ class NaiveSampler:
 		for nav_topic_id in range(self.num_nav_topics):
 			log_joint += calculate_multivariate_normal_logpdf(
 				self.nav_topic_means[-1][nav_topic_id], 
-				self.nav_topic_mean_prior_mean, 
-				self.nav_topic_mean_prior_covariance
+				self.nav_topic_mean_prior_means[nav_topic_id], 
+				CovarianceMatrix.scaled(
+					self.nav_topic_covariances[-1][nav_topic_id], (1/self.nav_topic_mean_prior_kappa))
 			)
 			log_joint += invwishart.logpdf(
 				self.nav_topic_covariances[-1][nav_topic_id].matrix,
@@ -267,166 +235,150 @@ class NaiveSampler:
 
 
 	def run(self, num_iterations):
-		##
-		# SAMPLED VALUES
-		##
+		if 'nav' in self.modes:
+			##
+			# SAMPLED VALUES
+			##
+			# num iterations x num topics x word embedding dim^2
+			self.nav_topic_covariances = []
+			# num iterations x num articles x num topics
+			self.nav_article_proportions = []
 
-		assignments, means = get_kmeans_assignments(
-			self.training_data.nav_embeddings, self.num_nav_topics)
+			if self.nav_initialization == 'r':
+				# num iterations x num topics x word embedding dim
+				self.nav_topic_means = [[
+					np.random.randn(self.training_data.nav_embeddings.shape[1]) for _ in range(self.num_nav_topics)
+				]]
+				# num iterations x num articles x num navs per document
+				self.nav_article_nav_assignments = [[
+					[choice(self.num_nav_topics) for _ in range(len(self.training_data.article_navs[article_id]))]
+					for article_id in range(len(self.training_data.articles))
+				]]
+			elif self.nav_initialization == 'k':
+				assignments, means = get_kmeans_assignments(
+					self.training_data.nav_embeddings, self.num_nav_topics)
 
-		# num iterations x num topics x word embedding dim
-		self.nav_topic_means = [means]
-		# num iterations x num topics x word embedding dim^2
-		self.nav_topic_covariances = []
-		# num iterations x num articles x num topics
-		self.nav_article_proportions = []
-		# num iterations x num articles x num navs per document
-		# self.nav_article_nav_assignments = [[
-		# 	[choice(self.num_nav_topics) for _ in range(len(self.training_data.article_navs[article_id]))]
-		# 	for article_id in range(len(self.training_data.articles))
-		# ]]
-		self.nav_article_nav_assignments = [[
-			[assignments[nav_id] for nav_id in self.training_data.article_navs[article_id]] \
-			for article_id in range(len(self.training_data.articles))
-		]]
-
-		##
-		# MONITORING VALUES
-		##
-
-		self.nav_log_joints = []
-
-		print("%s: beginning nav sampling..." % datetime.now())
-
-		for epoch in range(num_iterations):
-			# general purpose cache for 
-			# memoizing expensive ops
-			self.cache = {}
-			self.calculate_nav_intermediate_values()
-
-			# with ThreadPool(NUM_WORKERS) as p:
-			# 	# re-sample nav topic means & covariances
-			# 	updated_nav_topic_means_and_covariances = p.map(
-			# 		self.sample_nav_topic_mean_and_covariance, range(self.num_nav_topics)
-			# 	)
-			# 	self.nav_topic_means.append(
-			# 		[nav_updated_topic_mean for (nav_updated_topic_mean, _) in updated_nav_topic_means_and_covariances])
-			# 	self.nav_topic_covariances.append(
-			# 		[nav_updated_topic_covariance for (_, nav_updated_topic_covariance) in updated_nav_topic_means_and_covariances])
-
-			# 	# re-sample nav article proportions
-			# 	self.nav_article_proportions.append(p.map(
-			# 		self.sample_nav_article_proportions, 
-			# 		range(len(self.training_data.articles))
-			# 	))
-
-			# 	# re-sample nav article nav assignments
-			# 	self.nav_article_nav_assignments.append(p.map(
-			# 		self.sample_nav_article_nav_assignments,
-			# 		range(len(self.training_data.articles))
-			# 	))
-
-			if epoch == 0:
-				updated_nav_topic_covariances = []
-				for nav_topic_id in range(self.num_nav_topics):
-					updated_nav_topic_covariances.append(
-						CovarianceMatrix(np.cov(np.stack(self.nav_topic_stats[nav_topic_id][0]), rowvar=False))
-					)
-				self.nav_topic_covariances.append(updated_nav_topic_covariances)
+				# num iterations x num topics x word embedding dim
+				self.nav_topic_means = [means]
+				# num iterations x num articles x num navs per document
+				self.nav_article_nav_assignments = [[
+					[assignments[nav_id] for nav_id in self.training_data.article_navs[article_id]] \
+					for article_id in range(len(self.training_data.articles))
+				]]
 			else:
-				print("%s: sampling nav topic means" % (datetime.now()))
+				raise Exception("Unsupported initialization: %s" % (self.nav_initialization))
 
-				updated_nav_topic_means = []
-				updated_nav_topic_covariances = []
-				for nav_topic_id in range(self.num_nav_topics):
-					updated_nav_topic_mean, updated_nav_topic_covariance = self.sample_nav_topic_mean_and_covariance(nav_topic_id)
+			##
+			# MONITORING VALUES
+			##
 
-					updated_nav_topic_means.append(updated_nav_topic_mean)
-					updated_nav_topic_covariances.append(updated_nav_topic_covariance)
-				self.nav_topic_means.append(updated_nav_topic_means)
-				self.nav_topic_covariances.append(updated_nav_topic_covariances)
+			self.nav_log_joints = []
 
-			print("%s: sampling nav article proportions" % (datetime.now()))
+			print("%s: beginning nav sampling..." % datetime.now())
 
-			updated_nav_article_proportions = []
-			for article_id in range(len(self.training_data.articles)):
-				updated_nav_article_proportions.append(self.sample_nav_article_proportions(article_id))
-			self.nav_article_proportions.append(updated_nav_article_proportions)
+			with ThreadPool(self.num_workers) as p:
+				for epoch in range(num_iterations):
+					# general purpose cache for 
+					# memoizing expensive ops
+					self.cache = {}
+					self.calculate_nav_intermediate_values()
 
-			print("%s: sampling nav topic assignments" % (datetime.now()))
+					
+					print("%s: sampling nav topics" % (datetime.now()))
 
-			updated_nav_article_nav_assignments = []
-			for article_id in range(len(self.training_data.articles)):
-				updated_nav_article_nav_assignments.append(self.sample_nav_article_nav_assignments(article_id))
-			self.nav_article_nav_assignments.append(updated_nav_article_nav_assignments)
-
-			self.nav_log_joints.append(self.calculate_nav_log_joint())
-
-			if epoch % 1 == 0:
-				for topic_id in range(self.num_nav_topics):
-					top_nav_ids = np.argsort(-np.array([
-						self.calculate_topic_nav_logprob(topic_id, nav_id) \
-						for nav_id in range(len(self.training_data.nav_vocab))
-					]))[:5]
-					top_article_ids = np.argsort(
-						-np.stack(updated_nav_article_proportions)[:, topic_id])[:5]
-					print("topic %s: %s; %s" % (
-							topic_id, 
-							",".join([
-								self.training_data.nav_vocab[nav_id][1] for nav_id in top_nav_ids]), 
-							",".join(map(str, top_article_ids))
-						)
+					# re-sample nav topic means & covariances
+					updated_nav_topic_means_and_covariances = p.map(
+						self.sample_nav_topic_mean_and_covariance, range(self.num_nav_topics)
 					)
+					self.nav_topic_means.append(
+						[nav_updated_topic_mean for (nav_updated_topic_mean, _) in updated_nav_topic_means_and_covariances])
+					self.nav_topic_covariances.append(
+						[nav_updated_topic_covariance for (_, nav_updated_topic_covariance) in updated_nav_topic_means_and_covariances])
 
-			print("%s: nav, END OF EPOCH %s, log_joint=%s" % (datetime.now(), epoch, self.nav_log_joints[-1]))
+					print("%s: sampling nav article proportions" % (datetime.now()))
 
-		# self.ne_topic_proportions = []
-		# self.ne_article_proportions = []
-		# self.ne_article_ne_assignments = [[
-		# 	[choice(self.num_ne_topics) for _ in range(len(self.training_data.article_nes[article_id]))] \
-		# 	for article_id in range(len(self.training_data.articles))
-		# ]]
+					# re-sample nav article proportions
+					self.nav_article_proportions.append(p.map(
+						self.sample_nav_article_proportions, 
+						range(len(self.training_data.articles))
+					))
 
-		# self.ne_log_joints = []
+					print("%s: sampling nav topic assignments" % (datetime.now()))
 
-		# print("%s: beginning ne sampling..." % datetime.now())
+					# re-sample nav article nav assignments
+					self.nav_article_nav_assignments.append(p.map(
+						self.sample_nav_article_nav_assignments,
+						range(len(self.training_data.articles))
+					))
 
-		# for epoch in range(num_iterations):
-		# 	self.calculate_ne_intermediate_values()
+					self.nav_log_joints.append(self.calculate_nav_log_joint())
 
-		# 	updated_ne_topic_proportions = []
-		# 	for ne_topic_id in range(self.num_ne_topics):
-		# 		updated_ne_topic_proportions.append(self.sample_ne_topic_proportions(ne_topic_id))
-		# 	self.ne_topic_proportions.append(updated_ne_topic_proportions)
+					if epoch % 1 == 0:
+						for topic_id in range(self.num_nav_topics):
+							top_nav_ids = np.argsort(-np.array([
+								self.calculate_topic_nav_logprob(topic_id, nav_id) \
+								for nav_id in range(len(self.training_data.nav_vocab))
+							]))[:5]
+							top_article_ids = np.argsort(
+								-np.stack(self.nav_article_proportions[-1])[:, topic_id])[:5]
+							print("topic %s: %s; %s" % (
+									topic_id, 
+									",".join([
+										self.training_data.nav_vocab[nav_id][1] for nav_id in top_nav_ids]), 
+									",".join(map(str, top_article_ids))
+								)
+							)
 
-		# 	updated_ne_article_proportions = []
-		# 	for article_id in range(len(self.training_data.articles)):
-		# 		updated_ne_article_proportions.append(self.sample_ne_article_proportions(article_id))
-		# 	self.ne_article_proportions.append(updated_ne_article_proportions)
+					print("%s: nav, END OF EPOCH %s, log_joint=%s" % (datetime.now(), epoch, self.nav_log_joints[-1]))
 
-		# 	updated_ne_article_ne_assignments = []
-		# 	for article_id in range(len(self.training_data.articles)):
-		# 		if len(self.training_data.article_nes[article_id]) == 0:
-		# 			updated_ne_article_ne_assignments.append([])
-		# 		else:
-		# 			updated_ne_article_ne_assignments.append(self.sample_ne_article_assignments(article_id))
+		if 'ne' in self.modes:
+			self.ne_topic_proportions = []
+			self.ne_article_proportions = []
+			self.ne_article_ne_assignments = [[
+				[choice(self.num_ne_topics) for _ in range(len(self.training_data.article_nes[article_id]))] \
+				for article_id in range(len(self.training_data.articles))
+			]]
 
-		# 	self.ne_article_ne_assignments.append(updated_ne_article_ne_assignments)
+			self.ne_log_joints = []
 
-		# 	self.ne_log_joints.append(self.calculate_ne_log_joint())
+			print("%s: beginning ne sampling..." % datetime.now())
 
-		# 	print("%s: ne, END OF EPOCH %s, log_joint=%s" % (datetime.now(), epoch, self.ne_log_joints[-1]))
+			for epoch in range(num_iterations):
+				self.calculate_ne_intermediate_values()
 
-		# 	if epoch % 10 == 0:
-		# 		for ne_topic_id in range(self.num_ne_topics):
-		# 			top_ne_ids = np.argsort(
-		# 				-np.stack(updated_ne_topic_proportions[ne_topic_id]))[:5]
-		# 			top_article_ids = np.argsort(
-		# 				-np.stack(updated_ne_article_proportions)[:, ne_topic_id])[:5]
-		# 			print("topic %s: %s; %s" % (
-		# 					ne_topic_id, 
-		# 					",".join([
-		# 						self.training_data.ne_vocab[ne_id] for ne_id in top_ne_ids]), 
-		# 					",".join(map(str, top_article_ids))
-		# 				)
-		# 			)
+				updated_ne_topic_proportions = []
+				for ne_topic_id in range(self.num_ne_topics):
+					updated_ne_topic_proportions.append(self.sample_ne_topic_proportions(ne_topic_id))
+				self.ne_topic_proportions.append(updated_ne_topic_proportions)
+
+				updated_ne_article_proportions = []
+				for article_id in range(len(self.training_data.articles)):
+					updated_ne_article_proportions.append(self.sample_ne_article_proportions(article_id))
+				self.ne_article_proportions.append(updated_ne_article_proportions)
+
+				updated_ne_article_ne_assignments = []
+				for article_id in range(len(self.training_data.articles)):
+					if len(self.training_data.article_nes[article_id]) == 0:
+						updated_ne_article_ne_assignments.append([])
+					else:
+						updated_ne_article_ne_assignments.append(self.sample_ne_article_assignments(article_id))
+
+				self.ne_article_ne_assignments.append(updated_ne_article_ne_assignments)
+
+				self.ne_log_joints.append(self.calculate_ne_log_joint())
+
+				print("%s: ne, END OF EPOCH %s, log_joint=%s" % (datetime.now(), epoch, self.ne_log_joints[-1]))
+
+				if epoch % 10 == 0:
+					for ne_topic_id in range(self.num_ne_topics):
+						top_ne_ids = np.argsort(
+							-np.stack(updated_ne_topic_proportions[ne_topic_id]))[:5]
+						top_article_ids = np.argsort(
+							-np.stack(updated_ne_article_proportions)[:, ne_topic_id])[:5]
+						print("topic %s: %s; %s" % (
+								ne_topic_id, 
+								",".join([
+									self.training_data.ne_vocab[ne_id] for ne_id in top_ne_ids]), 
+								",".join(map(str, top_article_ids))
+							)
+						)

@@ -10,18 +10,18 @@ from samplers import NaiveSampler, CollapsedSampler, CollapsedCholeskySampler
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Estimate posterior via Gibbs sampling.')
 	parser.add_argument('--modes', dest='modes', help='nouns and verbs (nav), named entities (ne)', default='nav')
-	parser.add_argument('--sampler', dest='sampler', help='[n]aive, [c]ollapsed or [ch]olesky')
-	parser.add_argument('--num-threads', dest='num_threads', help='Parallelization for naive sampler', default=2)
+	parser.add_argument('--sampler', dest='sampler', help='[n]aive or [c]ollapsed')
+	parser.add_argument('--num-threads', dest='num_threads', help='Parallelization for naive sampler', default=8)
 	parser.add_argument('--data-start-date', dest='data_start_date', help='YYYYMMDD')
 	parser.add_argument('--data-end-date', dest='data_end_date', help='YYYYMMDD')
 	parser.add_argument('--data-disallow-repeats', dest='data_disallow_repeats', action='store_true', default=False)
 	parser.add_argument('--num-nav-topics', dest='num_nav_topics', default=10)
-	parser.add_argument('--nav-topic-prior-mean', dest='nav_topic_prior_mean', help='[z]ero, [em]bedding mean, [k]-means')
+	parser.add_argument('--nav-topic-prior-mean', dest='nav_topic_prior_mean', help='[z]ero, [em]bedding mean, [k]-means', default='z')
 	parser.add_argument('--nav-topic-prior-kappa', dest='nav_topic_prior_kappa', default=1)
 	parser.add_argument('--nav-topic-prior-dof-shift', dest='nav_topic_prior_dof_shift', default=2)
 	parser.add_argument('--nav-topic-prior-scale-factor', dest='nav_topic_prior_scale_factor', default=3)
 	parser.add_argument('--nav-article-proportions-prior-alpha', dest='nav_article_proportions_prior_alpha', default=1)
-	parser.add_argument('--nav-initialization', dest='nav_initialization', help='[r]andom, [k]-means')
+	parser.add_argument('--nav-initialization', dest='nav_initialization', help='[r]andom, [k]-means', default='r')
 	parser.add_argument('--num-ne-topics', dest='num_ne_topics', default=10)
 	parser.add_argument('--ne-topic-prior-alpha', dest='ne_topic_prior_alpha', default=1)
 	parser.add_argument('--ne-article-proportions-prior-alpha', dest='ne_article_proportions_prior_alpha', default=0.1)
@@ -96,8 +96,6 @@ if __name__ == '__main__':
 			ne_topic_vocab_prior_alpha=ne_topic_prior_alpha,
 			ne_article_topic_proportions_prior_alpha=ne_article_proportions_prior_alpha
 		)
-	elif args.sampler == 'ch':
-		raise Exception("Unimplemented!")
 	else:
 		raise Exception("Unsupported sampler: %s" % (args.sampler))
 	

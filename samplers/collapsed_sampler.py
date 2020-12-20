@@ -89,7 +89,8 @@ class CollapsedSampler:
 			self.nav_topic_scales[nav_topic_id] += \
 				np.einsum('ki,kj->ij', topic_nav_devs, topic_nav_devs) \
 				+ (((self.nav_topic_mean_prior_kappa * topic_nav_count) / self.nav_topic_kappas[nav_topic_id]) \
-					* ((topic_nav_mean - self.nav_topic_mean_prior_mean) @ ((topic_nav_mean - self.nav_topic_mean_prior_mean).transpose())))
+					* ((topic_nav_mean - self.nav_topic_mean_prior_means[nav_topic_id]) @ (
+						(topic_nav_mean - self.nav_topic_mean_prior_means[nav_topic_id]).transpose())))
 
 
 	def sample_nav_article_nav_assignment(self, article_id, article_nav_id, nav_id):

@@ -1,8 +1,9 @@
 import numpy as np
 from datetime import datetime
 from numpy.random import choice
-from collections import defaultdict
+import matplotlib.pyplot as plt
 from multiprocessing.pool import ThreadPool
+from collections import defaultdict, Counter
 from scipy.stats import dirichlet, invwishart, multivariate_normal
 
 from utils import (
@@ -202,6 +203,9 @@ class NaiveSampler:
 
 
 	def sample_ne_article_assignments(self, article_id):
+		if len(self.training_data.article_nes[article_id]) == 0:
+			return []
+
 		ne_article_proportions = self.ne_article_proportions[-1][article_id]
 		unnormalized = np.array([
 			[ne_article_proportions[topic_id] * self.ne_topic_proportions[-1][topic_id][ne_id] \
@@ -232,6 +236,13 @@ class NaiveSampler:
 				log_joint += np.log(self.ne_topic_proportions[-1][ne_topic_assignment][ne_id])
 
 		return log_joint
+
+
+	def plot_log_joints(self, log_joints, title):
+		plt.plot(log_joints)
+		plt.ylabel('Log Joint')
+		plt.title(title)
+		plt.show()
 
 
 	def run(self, num_iterations):
@@ -331,6 +342,8 @@ class NaiveSampler:
 
 					print("%s: nav, END OF EPOCH %s, log_joint=%s" % (datetime.now(), epoch, self.nav_log_joints[-1]))
 
+			self.plot_log_joints(self.nav_log_joints, "Nouns & Verbs, Log Joint")
+
 		if 'ne' in self.modes:
 			self.ne_topic_proportions = []
 			self.ne_article_proportions = []
@@ -343,42 +356,55 @@ class NaiveSampler:
 
 			print("%s: beginning ne sampling..." % datetime.now())
 
-			for epoch in range(num_iterations):
-				self.calculate_ne_intermediate_values()
+			with ThreadPool(self.num_workers) as p:
+				for epoch in range(num_iterations):
+					self.calculate_ne_intermediate_values()
 
-				updated_ne_topic_proportions = []
-				for ne_topic_id in range(self.num_ne_topics):
-					updated_ne_topic_proportions.append(self.sample_ne_topic_proportions(ne_topic_id))
-				self.ne_topic_proportions.append(updated_ne_topic_proportions)
+					self.ne_topic_proportions.append(p.map(
+						self.sample_ne_topic_proportions, 
+						range(self.num_ne_topics)
+					))
 
-				updated_ne_article_proportions = []
-				for article_id in range(len(self.training_data.articles)):
-					updated_ne_article_proportions.append(self.sample_ne_article_proportions(article_id))
-				self.ne_article_proportions.append(updated_ne_article_proportions)
+					self.ne_article_proportions.append(p.map(
+						self.sample_ne_article_proportions, 
+						range(len(self.training_data.articles))
+					))
 
-				updated_ne_article_ne_assignments = []
-				for article_id in range(len(self.training_data.articles)):
-					if len(self.training_data.article_nes[article_id]) == 0:
-						updated_ne_article_ne_assignments.append([])
-					else:
-						updated_ne_article_ne_assignments.append(self.sample_ne_article_assignments(article_id))
+					self.ne_article_ne_assignments.append(p.map(
+						self.sample_ne_article_assignments, 
+						range(len(self.training_data.articles))
+					))
 
-				self.ne_article_ne_assignments.append(updated_ne_article_ne_assignments)
+					self.ne_log_joints.append(self.calculate_ne_log_joint())
 
-				self.ne_log_joints.append(self.calculate_ne_log_joint())
+					print("%s: ne, END OF EPOCH %s, log_joint=%s" % (datetime.now(), epoch, self.ne_log_joints[-1]))
 
-				print("%s: ne, END OF EPOCH %s, log_joint=%s" % (datetime.now(), epoch, self.ne_log_joints[-1]))
+					if epoch % 10 == 0:
+						missing_nes = Counter()
+						articles_by_lang = defaultdict(Counter)
+						for article_id in range(len(self.ne_article_proportions[-1])):
+							lang = self.training_data.articles[article_id].lang
+							if len(self.training_data.article_nes[article_id]) == 0:
+								missing_nes[lang] += 1
+							else:
+								max_topic_id = np.argmax(self.ne_article_proportions[-1][article_id])
+								articles_by_lang[max_topic_id][lang] += 1
 
-				if epoch % 10 == 0:
-					for ne_topic_id in range(self.num_ne_topics):
-						top_ne_ids = np.argsort(
-							-np.stack(updated_ne_topic_proportions[ne_topic_id]))[:5]
-						top_article_ids = np.argsort(
-							-np.stack(updated_ne_article_proportions)[:, ne_topic_id])[:5]
-						print("topic %s: %s; %s" % (
-								ne_topic_id, 
-								",".join([
-									self.training_data.ne_vocab[ne_id] for ne_id in top_ne_ids]), 
-								",".join(map(str, top_article_ids))
+						print("missing NEs: %s" % (missing_nes))
+						for ne_topic_id in range(self.num_ne_topics):
+							top_ne_ids = np.argsort(
+								-self.ne_topic_proportions[-1][ne_topic_id])[:5]
+							top_article_ids = np.argsort(
+								-np.stack(self.ne_article_proportions[-1])[:, ne_topic_id])[:5]
+
+							print("topic %s: %s; %s; %s" % (
+									ne_topic_id, 
+									",".join([
+										self.training_data.ne_vocab[ne_id] for ne_id in top_ne_ids]), 
+									",".join(map(str, top_article_ids)),
+									",".join(map(lambda lang_count: "%s-%s" % lang_count, 
+										articles_by_lang[ne_topic_id].items()))
+								)
 							)
-						)
+
+			self.plot_log_joints(self.ne_log_joints, "Named Entities, Log Joint")

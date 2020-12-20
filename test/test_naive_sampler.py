@@ -12,12 +12,14 @@ class NaiveSamplerTest(unittest.TestCase):
 
 
 	def get_default_sampler(self, training_data, num_nav_topics=3, num_ne_topics=3):
-		return NaiveSampler(1, training_data, num_nav_topics=num_nav_topics, 
-			nav_topic_mean_prior_mean=np.mean(training_data.nav_embeddings, axis=0),
-			nav_topic_mean_prior_covariance=(1/num_nav_topics)*np.cov(training_data.nav_embeddings, rowvar=False),
-			nav_topic_covariance_prior_dof=training_data.nav_embeddings.shape[1],
-			nav_topic_covariance_prior_scale=training_data.nav_embeddings.shape[1] * np.eye(training_data.nav_embeddings.shape[1], dtype=np.float64),
+		return NaiveSampler([], 1, training_data, num_nav_topics=num_nav_topics, 
+			nav_topic_mean_prior_means=[
+				np.mean(training_data.nav_embeddings, axis=0) for _ in range(num_nav_topics)],
+			nav_topic_mean_prior_kappa=1,
+			nav_topic_covariance_prior_dof=training_data.nav_embeddings.shape[1] + 2,
+			nav_topic_covariance_prior_scale=3 * np.eye(training_data.nav_embeddings.shape[1], dtype=np.float64),
 			nav_article_topic_proportions_prior_alpha=np.ones(num_nav_topics),
+			nav_initialization='r',
 			num_ne_topics=num_ne_topics,
 			ne_topic_vocab_prior_alpha=np.ones(len(training_data.ne_vocab)),
 			ne_article_topic_proportions_prior_alpha=np.ones(num_ne_topics)
@@ -129,13 +131,6 @@ class NaiveSamplerTest(unittest.TestCase):
 			),
 			sampler.nav_article_topic_counts
 		)
-
-	# look for other derivation of mean and cov math ugh
-
-	@mock.patch('samplers.naive_sampler.multivariate_normal')
-	@mock.patch('samplers.naive_sampler.invwishart')
-	def test_sample_nav_topic_mean_and_covariance(self, mock_multivariate_normal, mock_invwishart):
-		print("NONE")
 
 
 	@mock.patch('samplers.naive_sampler.dirichlet')

@@ -12,7 +12,7 @@ class NaiveSamplerTest(unittest.TestCase):
 
 
 	def get_default_sampler(self, training_data, num_nav_topics=3, num_ne_topics=3):
-		return NaiveSampler([], 1, training_data, num_nav_topics=num_nav_topics, 
+		return NaiveSampler("test", [], 1, training_data, num_nav_topics=num_nav_topics, 
 			nav_topic_mean_prior_means=[
 				np.mean(training_data.nav_embeddings, axis=0) for _ in range(num_nav_topics)],
 			nav_topic_mean_prior_kappa=1,

@@ -9,6 +9,7 @@ from samplers import NaiveSampler, CollapsedSampler, CollapsedCholeskySampler
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Estimate posterior via Gibbs sampling.')
+	parser.add_argument('--variant', dest='variant', help='Variant name.')
 	parser.add_argument('--modes', dest='modes', help='nouns and verbs (nav), named entities (ne)', default='nav')
 	parser.add_argument('--sampler', dest='sampler', help='[n]aive or [c]ollapsed')
 	parser.add_argument('--num-threads', dest='num_threads', help='Parallelization for naive sampler', default=8)
@@ -72,7 +73,7 @@ if __name__ == '__main__':
 
 	if args.sampler == 'n':
 		sampler = NaiveSampler(
-			modes, int(args.num_threads), training_data, num_nav_topics=num_nav_topics, 
+			args.variant, modes, int(args.num_threads), training_data, num_nav_topics=num_nav_topics, 
 			nav_topic_mean_prior_means=nav_topic_mean_prior_means,
 			nav_topic_mean_prior_kappa=nav_topic_mean_prior_kappa,
 			nav_topic_covariance_prior_dof=nav_topic_covariance_prior_dof,

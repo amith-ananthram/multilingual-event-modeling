@@ -1,3 +1,5 @@
+import os
+import pickle
 import numpy as np
 from datetime import datetime
 from numpy.random import choice
@@ -13,8 +15,10 @@ from utils import (
 	calculate_multivariate_normal_logpdf
 )
 
+OUTPUT_DIR = 'output'
+
 class NaiveSampler:
-	def __init__(self, modes, num_workers, training_data, 
+	def __init__(self, variant, modes, num_workers, training_data, 
 		num_nav_topics, nav_topic_mean_prior_means, nav_topic_mean_prior_kappa, 
 		nav_topic_covariance_prior_dof, nav_topic_covariance_prior_scale, 
 		nav_article_topic_proportions_prior_alpha, nav_initialization,
@@ -22,6 +26,7 @@ class NaiveSampler:
 	):
 		self.cache = {}
 		self.modes = modes
+		self.variant = variant
 		self.num_workers = num_workers
 		self.training_data = training_data
 
@@ -242,7 +247,7 @@ class NaiveSampler:
 		plt.plot(log_joints)
 		plt.ylabel('Log Joint')
 		plt.title(title)
-		plt.show()
+		plt.savefig(os.path.join(OUTPUT_DIR, "%s-log-joints.png" % self.variant))
 
 
 	def run(self, num_iterations):
@@ -408,3 +413,9 @@ class NaiveSampler:
 							)
 
 			self.plot_log_joints(self.ne_log_joints, "Named Entities, Log Joint")
+
+			with open(os.path.join(OUTPUT_DIR, '%s-topics.pkl' % (self.variant)), 'wb') as f:
+				pickle.dump(self.ne_topic_proportions, f)
+
+			with open(os.path.join(OUTPUT_DIR, '%s-proportions.pkl' % (self.variant)), 'wb') as f:
+				pickle.dump(self.ne_article_proportions, f)
